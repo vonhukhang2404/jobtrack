@@ -31,4 +31,8 @@ public class UserService {
 
         userRepository.save(user);
     }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() -> new IllegalStateException("User not found: " + email));
+    }
 }
