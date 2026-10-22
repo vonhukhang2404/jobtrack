@@ -19,6 +19,7 @@
             <th>業界</th>
             <th>URL</th>
             <th>メモ</th>
+            <th>操作</th>
         </tr>
         </thead>
         <tbody>
@@ -26,7 +27,15 @@
             <td th:text="${c.name}">企業名</td>
             <td th:text="${c.industry}">業界</td>
             <td><a th:if="${c.url}" th:href="${c.url}" th:text="${c.url}" target="_blank">URL</a></td>
-            <td th:text="${c.memo}">メモ</td>
+            <td th:text="${c.memo}" style="white-space: pre-wrap;">メモ</td>
+            <td class="text-nowrap">
+                <a th:href="@{/companies/{id}/edit(id=${c.id})}" class="btn btn-sm btn-outline-secondary">編集</a>
+
+                <form th:action="@{/companies/{id}/delete(id=${c.id})}" method="post" class="d-inline"
+                      onsubmit="return confirm('この企業を削除しますか？\n関連する応募情報も削除されます。');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">削除</button>
+                </form>
+            </td>
         </tr>
         </tbody>
     </table>

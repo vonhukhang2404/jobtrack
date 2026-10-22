@@ -4,7 +4,9 @@ import com.khang.jobtrack.dto.CompanyForm;
 import com.khang.jobtrack.entity.Company;
 import com.khang.jobtrack.entity.User;
 import com.khang.jobtrack.repository.CompanyRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -35,5 +37,30 @@ public class CompanyService {
         company.setMemo(form.getMemo());
 
         companyRepository.save(company);
+    }
+
+    public Company findOwned(User user, Long id) {
+        return companyRepository.findByIdAndUserId(id, user.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    public boolean isNameTakenByOther(User user, String name, Long id) {
+        return companyRepository.existsByUserIdAndNameAndIdNot(user.getId(), name, id);
+    }
+
+    public void update(User user, Long id, CompanyForm form) {
+        Company company = findOwned(user, id);
+        company.setName(form.getName());
+        company.setIndustry(form.getIndustry());
+        company.setUrl(form.getUrl());
+        company.setMemo(form.getMemo());
+
+        companyRepository.save(company);
+    }
+
+    public void delete(User user, Long id) {
+        Company company = findOwned(user, id);
+
+        companyRepository.delete(company);
     }
 }

@@ -1,6 +1,7 @@
 package com.khang.jobtrack.controller;
 
 import com.khang.jobtrack.dto.CompanyForm;
+import com.khang.jobtrack.entity.Company;
 import com.khang.jobtrack.service.CompanyService;
 import com.khang.jobtrack.service.UserService;
 import jakarta.validation.Valid;
@@ -59,6 +60,56 @@ public class CompanyController {
             return "companies/form";
         }
         companyService.create(user, companyForm);
+
+        return "redirect:/companies";
+    }
+
+    @GetMapping("/{id}/edit")                       // GET /companies/5/edit
+    public String editForm(@AuthenticationPrincipal UserDetails userDetails,
+                           @PathVariable Long id,
+                           Model model) {
+        User user = userService.findByEmail(userDetails.getUsername());
+        Company company = companyService.findOwned(user, id);   // không phải của mình → 404
+
+        CompanyForm form = new CompanyForm();
+        form.setName(company.getName());
+        form.setIndustry(company.getIndustry());
+        form.setUrl(company.getUrl());
+        form.setMemo(company.getMemo());
+
+        model.addAttribute("companyForm", form);
+        model.addAttribute("companyId", id);        // để form.html biết đang SỬA
+        return "companies/form";
+    }
+
+    @PostMapping("/{id}")                           // POST /companies/5
+    public String update(@AuthenticationPrincipal UserDetails userDetails,
+                         @PathVariable Long id,
+                         @Valid @ModelAttribute CompanyForm companyForm,
+                         BindingResult bindingResult,
+                         Model model) {
+        User user = userService.findByEmail(userDetails.getUsername());
+
+        if (companyService.isNameTakenByOther(user, companyForm.getName(), id)) {
+            bindingResult.rejectValue("name", "duplicate", "この企業は既に登録されています");
+        }
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("companyId", id);
+            return "companies/form";
+        }
+        companyService.update(user, id, companyForm);
+
+        return "redirect:/companies";
+    }
+
+    @PostMapping("/{id}/delete")                    // POST /companies/5/delete
+    public String delete(@AuthenticationPrincipal UserDetails userDetails,
+                         @PathVariable Long id) {
+
+        User user = userService.findByEmail(userDetails.getUsername());
+
+        companyService.delete(user, id);
 
         return "redirect:/companies";
     }
