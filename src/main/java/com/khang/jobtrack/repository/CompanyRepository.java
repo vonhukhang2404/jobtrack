@@ -9,7 +9,9 @@ import java.util.Optional;
 public interface CompanyRepository extends JpaRepository<Company, Long> {
 
     // Danh sách công ty của 1 user, mới nhất lên đầu
-    List<Company> findByUserIdOrderByCreatedAtDesc(Long userId);
+    List<Company> findByUserIdOrderByCreatedAtDescIdDesc(Long userId);
 
     Optional<Company> findByIdAndUserId(Long id, Long userId);
+
+    boolean existsByUserIdAndName(Long userId, String name);
 }

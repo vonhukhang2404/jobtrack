@@ -8,6 +8,7 @@
 <body class="bg-light">
 <div class="container mt-4">
     <h1 class="h3 mb-3">企業一覧</h1>
+    <a th:href="@{/companies/new}" class="btn btn-primary mb-3">＋ 企業を追加</a>
 
     <p th:if="${companies.isEmpty()}">まだ企業が登録されていません。</p>
 
