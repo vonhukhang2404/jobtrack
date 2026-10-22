@@ -1,6 +1,7 @@
 package com.khang.jobtrack.entity;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 @Entity
