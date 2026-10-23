@@ -15,7 +15,7 @@ public class CompanyForm {
     @Size(max = 255, message = "255文字以内で入力してください")
     private String url;
 
-    private String memo;   // TEXT → không cần giới hạn
+    private String memo;
 
     public String getName() {
         return name;

@@ -50,6 +50,7 @@ public class CompanyService {
 
     public void update(User user, Long id, CompanyForm form) {
         Company company = findOwned(user, id);
+
         company.setName(form.getName());
         company.setIndustry(form.getIndustry());
         company.setUrl(form.getUrl());
