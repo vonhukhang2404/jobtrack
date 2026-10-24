@@ -38,14 +38,13 @@ public class CompanyController {
         return "companies/list";
     }
 
-    @GetMapping("/new")                         // GET /companies/new → hiện form
+    @GetMapping("/new")
     public String newForm(Model model) {
-
         model.addAttribute("companyForm", new CompanyForm());
         return "companies/form";
     }
 
-    @PostMapping                                // POST /companies → lưu
+    @PostMapping
     public String create(@AuthenticationPrincipal UserDetails userDetails,
                          @Valid @ModelAttribute CompanyForm companyForm,
                          BindingResult bindingResult) {
@@ -63,12 +62,12 @@ public class CompanyController {
         return "redirect:/companies";
     }
 
-    @GetMapping("/{id}/edit")                       // GET /companies/5/edit
+    @GetMapping("/{id}/edit")
     public String editForm(@AuthenticationPrincipal UserDetails userDetails,
                            @PathVariable Long id,
                            Model model) {
         User user = userService.findByEmail(userDetails.getUsername());
-        Company company = companyService.findOwned(user, id);   // không phải của mình → 404
+        Company company = companyService.findOwned(user, id);
 
         CompanyForm form = new CompanyForm();
         form.setName(company.getName());
@@ -77,11 +76,11 @@ public class CompanyController {
         form.setMemo(company.getMemo());
 
         model.addAttribute("companyForm", form);
-        model.addAttribute("companyId", id);        // để form.html biết đang SỬA
+        model.addAttribute("companyId", id);
         return "companies/form";
     }
 
-    @PostMapping("/{id}")                           // POST /companies/5
+    @PostMapping("/{id}")
     public String update(@AuthenticationPrincipal UserDetails userDetails,
                          @PathVariable Long id,
                          @Valid @ModelAttribute CompanyForm companyForm,
@@ -102,7 +101,7 @@ public class CompanyController {
         return "redirect:/companies";
     }
 
-    @PostMapping("/{id}/delete")                    // POST /companies/5/delete
+    @PostMapping("/{id}/delete")
     public String delete(@AuthenticationPrincipal UserDetails userDetails,
                          @PathVariable Long id) {
 

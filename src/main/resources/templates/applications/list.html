@@ -8,6 +8,7 @@
 <body class="bg-light">
 <div class="container mt-4">
     <h1 class="h3 mb-3">応募一覧</h1>
+    <a th:href="@{/applications/new}" class="btn btn-primary mb-3">＋ 応募を追加</a>
 
     <p th:if="${applications.isEmpty()}">まだ応募が登録されていません。</p>
 
@@ -18,6 +19,7 @@
             <th>職種</th>
             <th>ステータス</th>
             <th>応募日</th>
+            <th>操作</th>
         </tr>
         </thead>
         <tbody>
@@ -26,6 +28,14 @@
             <td th:text="${a.position}">職種</td>
             <td th:text="${a.status.label}">ステータス</td>
             <td th:text="${a.appliedAt != null} ? ${#temporals.format(a.appliedAt, 'yyyy/MM/dd')} : ''">応募日</td>
+            <td class="text-nowrap">
+                <a th:href="@{/applications/{id}/edit(id=${a.id})}" class="btn btn-sm btn-outline-secondary">編集</a>
+
+                <form th:action="@{/applications/{id}/delete(id=${a.id})}" method="post" class="d-inline"
+                      onsubmit="return confirm('この応募を削除しますか？\n関連する面接・タスクも削除されます。');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">削除</button>
+                </form>
+            </td>
         </tr>
         </tbody>
     </table>
