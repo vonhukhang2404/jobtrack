@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<!-- 共通ナビゲーションバー: 各ページで th:replace="~{fragments/header :: navbar}" で読み込む -->
+<nav th:fragment="navbar" class="navbar navbar-expand navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">JobTrack</a>
+
+        <ul class="navbar-nav me-auto">
+            <li class="nav-item"><a class="nav-link" th:href="@{/companies}">企業一覧</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/applications}">応募一覧</a></li>
+        </ul>
+
+        <span class="navbar-text small me-3" sec:authorize="isAuthenticated()"
+              sec:authentication="name">user@example.com</span>
+
+        <form th:action="@{/logout}" method="post" class="d-flex" sec:authorize="isAuthenticated()">
+            <button type="submit" class="btn btn-outline-light btn-sm">ログアウト</button>
+        </form>
+    </div>
+</nav>
+
+</body>
+</html>
