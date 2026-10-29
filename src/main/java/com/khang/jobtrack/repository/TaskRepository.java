@@ -4,6 +4,7 @@ import com.khang.jobtrack.entity.Task;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,4 +14,8 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByApplicationCompanyUserIdOrderByDoneAscDueDateAscIdAsc(Long userId);
 
     Optional<Task> findByIdAndApplicationCompanyUserId(Long id, Long userId);
+
+    @EntityGraph(attributePaths = {"application", "application.company"})
+    List<Task> findByApplicationCompanyUserIdAndDoneFalseAndDueDateLessThanEqualOrderByDueDateAscIdAsc(
+            Long userId, LocalDate limit);
 }

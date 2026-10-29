@@ -2,31 +2,95 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>JobTrack</title>
+    <title>ダッシュボード | JobTrack</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 <nav th:replace="~{fragments/header :: navbar}"></nav>
 <div class="container">
-    <h1 class="h3 mb-1">JobTrack</h1>
-    <p class="text-muted mb-4">就活管理システム</p>
+    <h1 class="h3 mb-4">ダッシュボード</h1>
 
-    <div class="row g-3">
-        <div class="col-md-6">
+    <!-- 1. 件数のサマリー -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
             <a th:href="@{/companies}" class="card text-decoration-none h-100">
                 <div class="card-body">
-                    <h2 class="h5 card-title">企業一覧</h2>
-                    <p class="card-text text-muted">志望企業の登録・編集・削除</p>
+                    <div class="text-muted small">登録企業</div>
+                    <div class="display-6" th:text="${companyCount}">0</div>
                 </div>
             </a>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
             <a th:href="@{/applications}" class="card text-decoration-none h-100">
                 <div class="card-body">
-                    <h2 class="h5 card-title">応募一覧</h2>
-                    <p class="card-text text-muted">応募状況（ステータス・応募日）の管理</p>
+                    <div class="text-muted small">応募数</div>
+                    <div class="display-6" th:text="${applicationCount}">0</div>
                 </div>
             </a>
+        </div>
+        <div class="col-md-4">
+            <a th:href="@{/tasks}" class="card text-decoration-none h-100">
+                <div class="card-body">
+                    <div class="text-muted small">締切が近いタスク（7日以内・期限切れ含む）</div>
+                    <div class="display-6" th:classappend="${upcomingTasks.size() > 0} ? 'text-danger' : ''"
+                         th:text="${upcomingTasks.size()}">0</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- 2. 締切が近いタスク -->
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header bg-white fw-bold">締切が近いタスク</div>
+                <div class="card-body p-0">
+                    <p class="text-muted p-3 mb-0" th:if="${upcomingTasks.isEmpty()}">7日以内に締切のタスクはありません。</p>
+                    <table class="table table-sm mb-0 align-middle" th:unless="${upcomingTasks.isEmpty()}">
+                        <thead>
+                        <tr>
+                            <th class="ps-3">締切</th>
+                            <th>タスク</th>
+                            <th>企業名</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="t : ${upcomingTasks}"
+                            th:with="overdue=${t.dueDate.isBefore(today)}"
+                            th:classappend="${overdue} ? 'table-danger' : ''">
+                            <td class="ps-3 text-nowrap">
+                                <span th:text="${#temporals.format(t.dueDate, 'MM/dd')}">10/31</span>
+                                <span class="badge bg-danger ms-1" th:if="${overdue}">期限切れ</span>
+                                <span class="badge bg-warning text-dark ms-1"
+                                      th:if="${t.dueDate.isEqual(today)}">今日</span>
+                            </td>
+                            <td th:text="${t.title}">ES提出</td>
+                            <td th:text="${t.application.company.name}">企業名</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-white text-end">
+                    <a th:href="@{/tasks}" class="small">すべてのタスク →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 選考ステータス別の件数 -->
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header bg-white fw-bold">選考ステータス別</div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        th:each="e : ${statusCounts}"
+                        th:classappend="${e.value == 0} ? 'text-muted' : ''">
+                        <span th:text="${e.key.label}">未応募</span>
+                        <span class="badge rounded-pill"
+                              th:classappend="${e.value == 0} ? 'bg-light text-muted' : 'bg-primary'"
+                              th:text="${e.value}">0</span>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
