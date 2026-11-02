@@ -10,6 +10,11 @@
 <div class="container">
     <h1 class="h3 mb-4">ダッシュボード</h1>
 
+    <div class="alert alert-danger" th:if="${conflictCount != null and conflictCount > 0}">
+        ⚠ シフトと面接の時間が重なっている予定が <strong th:text="${conflictCount}">1</strong> 件あります。
+        <a th:href="@{/shifts}" class="alert-link">シフトを確認する</a>
+    </div>
+
     <!-- 1. 件数のサマリー -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
@@ -36,6 +41,37 @@
                          th:text="${upcomingTasks.size()}">0</div>
                 </div>
             </a>
+        </div>
+    </div>
+
+    <!-- 2b. これからの面接 -->
+    <div class="mb-4" th:if="${upcomingInterviews != null}">
+        <div class="card">
+            <div class="card-header bg-white fw-bold">これからの面接</div>
+            <div class="card-body p-0">
+                <p class="text-muted p-3 mb-0" th:if="${upcomingInterviews.isEmpty()}">予定されている面接はありません。</p>
+                <table class="table table-sm mb-0 align-middle" th:unless="${upcomingInterviews.isEmpty()}">
+                    <thead>
+                    <tr>
+                        <th class="ps-3">日時</th>
+                        <th>企業名</th>
+                        <th>回</th>
+                        <th>形式</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="i : ${upcomingInterviews}">
+                        <td class="ps-3 text-nowrap" th:text="${#temporals.format(i.scheduledAt, 'MM/dd (E) HH:mm')}">11/05 (木) 13:00</td>
+                        <td th:text="${i.application.company.name}">企業名</td>
+                        <td th:text="'第' + ${i.round} + '次'">第1次</td>
+                        <td th:text="${i.format.label}">オンライン</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white text-end">
+                <a th:href="@{/interviews}" class="small">すべての面接 →</a>
+            </div>
         </div>
     </div>
 
