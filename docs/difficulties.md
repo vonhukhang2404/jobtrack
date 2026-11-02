@@ -5,20 +5,23 @@ Dùng để ôn lại và trả lời câu hỏi phỏng vấn「開発で苦労
 
 ---
 
-## Tổng kết（2 tuần đầu: 2026-10-12 〜 10-26）
+## Tổng kết（3 tuần đầu: 2026-10-12 〜 11-01）
 
 ### Phân loại theo chủ đề
 
 | Chủ đề | Mục | Điểm chính |
 |---|---|---|
 | Môi trường / DB | 1, 2, 3, 6 | Bảng mã `utf8mb4` trên Windows, script chạy lại được (冪等性), dọn user MySQL, cấu hình SQL dialect của IDE |
-| Quản lý bí mật / Git | 4, 5 | Không commit mật khẩu thật, dùng biến môi trường `${DB_PASSWORD}` |
-| Spring cơ bản | 7, 8, 11 | Thiếu annotation thì Spring bỏ qua class; đọc kỹ package khi import; đường dẫn class + method được nối lại |
+| Quản lý bí mật / Git | 4, 5, 21, 22 | Không commit mật khẩu thật, dùng biến môi trường; đổi email commit sang noreply trước khi public; ký tự xuống dòng (CRLF/LF) |
+| Spring cơ bản | 7, 8, 11, 25 | Thiếu annotation thì Spring bỏ qua class; đọc kỹ package khi import; đường dẫn class + method được nối lại |
 | Spring Security | 9 | Trang login riêng, logout bằng POST (CSRF) |
 | Validation / dữ liệu nhập | 10, 12, 14 | Giới hạn theo cột DB và BCrypt (72 byte); chuỗi rỗng → `NULL`; kiểm tra trùng trừ chính nó (`IdNot`) |
-| JPA / SQL | 13, 17 | Sắp xếp ổn định bằng `id`; `@EntityGraph` chống N+1, xác nhận bằng log SQL |
-| Controller / màn hình | 15, 16 | Chiều copy `entity ⇄ form`, PRG (`redirect:`), thêm lại dữ liệu Model khi hiện lại form |
+| JPA / SQL | 13, 17, 23, 24, 27 | Sắp xếp ổn định bằng `id`; `@EntityGraph` chống N+1; `@JoinColumn` cho quan hệ; tên method = đường đi qua field; `@Query` + `GROUP BY` |
+| Controller / màn hình | 15, 16, 25 | Chiều copy `entity ⇄ form`, PRG (`redirect:`), thêm lại dữ liệu Model khi hiện lại form |
 | **Bảo mật** | **18**, 19 | **IDOR** qua URL và qua form, kiểm tra quyền ở server; không lộ stack trace |
+| Java cơ bản | 26 | `int` không tự đổi thành `Long` (`0` vs `0L`) |
+| Test | 28, 29 | Kiểm tra điều kiện test có đúng không; unit test bằng Mock, `contextLoads` cần DB |
+| **Định vị sản phẩm** | **20** | Giải thích khác biệt với Google Calendar / ChatGPT; tài liệu phải khớp với thực tế |
 
 ### Bài học chung
 
@@ -205,6 +208,89 @@ Dùng để ôn lại và trả lời câu hỏi phỏng vấn「開発で苦労
 - **Nguyên nhân:** Chưa có trang lỗi riêng; DevTools bật hiển thị chi tiết lỗi.
 - **Cách giải quyết:** Tạo `templates/error/404.html` và `error/error.html` (Spring Boot tự dùng, không cần code Java).
 - **Bài học:** Không để lộ thông tin nội bộ cho người dùng.
+
+---
+
+## Tuần 3
+
+### 20. Thầy hỏi: "Khác gì Google Calendar / ChatGPT?" và 企画書 không khớp thực tế
+
+- **Ngày:** 2026-10-26
+- **Hiện tượng:** Khi thầy kiểm tra dự án, không giải thích được rõ JobTrack khác gì Google Calendar, ChatGPT. Thầy hỏi 企画書 có viết bằng AI không. Một số dòng trong 企画書 không đúng thực tế (ghi MySQL dùng Docker, ghi đã chặn đổi trạng thái không hợp lệ).
+- **Nguyên nhân:** Chưa phân tích công cụ có sẵn; định vị AI là "chatbot" nên trùng với ChatGPT; 企画書 viết theo kế hoạch, không cập nhật theo thực tế.
+- **Cách giải quyết:** Định vị lại: Calendar quản lý "thời gian", JobTrack quản lý "tiến độ xin việc"; AI không trò chuyện mà xử lý dữ liệu đã lưu và trả kết quả thành dữ liệu (trích hạn nộp → tạo task); kết nối Calendar thay vì cạnh tranh. Sửa 企画書 v2 cho khớp thực tế, ghi rõ có dùng AI để chỉnh văn bản.
+- **Bài học:** Câu 「既存サービスとの違いは？」 chắc chắn sẽ bị hỏi. Tài liệu phải viết ở mức mình **giải thích được bằng lời**.
+- **Câu trả lời phỏng vấn:**
+  「Googleカレンダーは“時間”を管理しますが、JobTrackは企業ごとの選考状況や締切タスクなど“就活の進み具合”を管理します。予定はカレンダーに出力して連携します。」
+
+### 21. Email cá nhân nằm trong lịch sử commit
+
+- **Ngày:** 2026-10-26
+- **Hiện tượng:** Trước khi public lên GitHub, 12 commit đều ghi email Gmail thật.
+- **Cách giải quyết:** Bật 「Keep my email addresses private」 trên GitHub, `git config user.email` sang email noreply, sửa lại tác giả toàn bộ commit bằng `git filter-branch --env-filter`, xoá bản sao lưu `refs/original`. Kiểm tra lại toàn bộ lịch sử không có mật khẩu trước khi push.
+- **Bài học:** Viết lại lịch sử chỉ an toàn **trước** khi push. Public repo thì kiểm tra cả **lịch sử**, không chỉ file hiện tại.
+
+### 22. File không sửa gì nhưng Git báo thay đổi toàn bộ
+
+- **Ngày:** 2026-10-27
+- **Hiện tượng:** `Company.java`, `User.java` hiện "sửa 90 dòng" dù nội dung code giống hệt.
+- **Nguyên nhân:** Ký tự xuống dòng bị đổi (Windows `CRLF` ⇄ `LF`).
+- **Cách giải quyết:** Rollback 2 file, không đưa vào commit.
+- **Bài học:** Trước khi commit phải xem **danh sách file và diff**, không tick tất cả.
+
+### 23. Dùng sai annotation trong Entity
+
+- **Ngày:** 2026-10-27
+- **Hiện tượng:** `Task.java` dùng `@Column` cho quan hệ `@ManyToOne`, và `@NotNull` thay cho `@Column(nullable = false)`.
+- **Nguyên nhân:** Nhầm giữa annotation của JPA (mô tả DB) và Bean Validation (kiểm tra dữ liệu nhập).
+- **Cách giải quyết:** Quan hệ dùng `@JoinColumn(name = "application_id", nullable = false)`; NOT NULL ở DB dùng `@Column(nullable = false)`; `@NotNull` để ở Form.
+- **Bài học:** **Entity mô tả DB, Form kiểm tra người dùng nhập.** `@NotNull` trên kiểu `boolean` là vô nghĩa (kiểu nguyên thuỷ không bao giờ `null`).
+
+### 24. Tên method Repository sai đường đi
+
+- **Ngày:** 2026-10-27, 10-29
+- **Hiện tượng:** `findByUserId` cho Task, `countByUserId` cho Application → app không khởi động (`No property 'user' found`). Lỗi chính tả `CreateAt`. Quên `extends JpaRepository`.
+- **Nguyên nhân:** Task / Application không có field `user`; phải đi qua các quan hệ.
+- **Cách giải quyết:** Tên method = **đường đi qua các field**: Company → `UserId`, Application → `CompanyUserId`, Task → `ApplicationCompanyUserId`.
+- **Bài học:** Tên method dựa vào **tên field trong Entity**, không phải tên cột DB hay URL. Spring kiểm tra lúc khởi động nên restart là biết ngay.
+
+### 25. Copy Controller nhưng sót tên Model và annotation
+
+- **Ngày:** 2026-10-27
+- **Hiện tượng:** (1) Bấm 登録 → **405** (thiếu `@PostMapping` ở `create`). (2) `/tasks` lỗi 500 (thiếu `today` trong Model). (3) Form lỗi 500 (`addFormOptions` đưa `tasks` thay vì `applications`).
+- **Nguyên nhân:** Copy từ `ApplicationController` mà không đối chiếu với spec của HTML.
+- **Cách giải quyết:** Đối chiếu **tên trong Model** với `${...}` trong HTML.
+- **Bài học:** Field được inject mà **không dùng ở đâu** (IntelliJ tô xám) là dấu hiệu còn thiếu một bước.
+
+### 26. `0` và `0L`
+
+- **Ngày:** 2026-10-29
+- **Hiện tượng:** `Map<ApplicationStatus, Long>.put(status, 0)` báo lỗi compile.
+- **Nguyên nhân:** `0` là `int`, chỉ tự đóng gói thành `Integer`, không thành `Long`.
+- **Cách giải quyết:** `0L`.
+
+### 27. Đếm theo trạng thái: tên method không diễn tả được `GROUP BY`
+
+- **Ngày:** 2026-10-29
+- **Nội dung:** Dashboard cần số hồ sơ theo từng trạng thái.
+- **Cách giải quyết:** Viết JPQL bằng `@Query` (`SELECT a.status AS status, COUNT(a) AS count ... GROUP BY a.status`), nhận kết quả bằng interface projection `StatusCount`. Trạng thái không có trong DB thì bù 0 bằng `EnumMap` (giữ đúng thứ tự enum).
+- **Câu trả lời phỏng vấn:**
+  「単純な検索はメソッド名から自動生成し、集計（GROUP BY）は@QueryでJPQLを書きました。DBに存在しないステータスも0件で表示するため、EnumMapで全ステータスを初期化しています。」
+
+### 28. Test bảo mật bị sai điều kiện
+
+- **Ngày:** 2026-10-29
+- **Hiện tượng:** Test S1 ra 404, nhưng URL là `localhost:8080/localhost:8080/tasks/1/edit`. Một lần khác thì đang đăng nhập bằng **demo** (chủ của dữ liệu) nên mở được.
+- **Nguyên nhân:** 404 do **URL không tồn tại**, không phải do kiểm tra quyền.
+- **Bài học:** Kết quả đúng chưa chắc test đúng. Phải kiểm tra **điều kiện test** (tài khoản, URL) trước khi kết luận.
+
+### 29. Unit test với JUnit + Mockito
+
+- **Ngày:** 2026-10-29
+- **Nội dung:** Viết 4 unit test cho `TaskService`, `DashboardService` bằng Mock (không cần DB). Test mặc định `contextLoads` cần MySQL nên lỗi khi chạy toàn bộ.
+- **Cách giải quyết:** Thêm `DB_PASSWORD` vào template JUnit của IntelliJ (không lưu vào Git) → 5 test xanh. Thử "phá code" (xoá dòng kiểm tra quyền) để thấy test chuyển đỏ.
+- **Câu trả lời phỏng vấn:**
+  「JUnitとMockitoでServiceの単体テストを書きました。他人の応募IDではタスクが保存されないことをテストで確認しています。」
 
 ---
 
