@@ -294,6 +294,60 @@ Dùng để ôn lại và trả lời câu hỏi phỏng vấn「開発で苦労
 
 ---
 
+## Tuần 4
+
+### 30. Thuật toán trùng giờ: nhầm điều kiện "trùng" và "không trùng"
+
+- **Ngày:** 2026-11-05
+- **Hiện tượng:** Viết `aStart.isAfter(bEnd) && aEnd.isAfter(bStart)` → test 「一部が重なる」 đỏ.
+- **Nguyên nhân:** `aStart > bEnd` là điều kiện **không trùng** (A nằm hẳn sau B). Ngoài ra 2 trường hợp không trùng phải nối bằng `||` (không thể vừa trước vừa sau).
+- **Cách giải quyết:** Không trùng = `aStart >= bEnd || aEnd <= bStart` → lấy phủ định (De Morgan) → `aStart.isBefore(bEnd) && aEnd.isAfter(bStart)`. Dùng `<` (không phải `<=`) nên chạm biên (13:00 kết thúc / 13:00 bắt đầu) không tính là trùng.
+- **Bài học:** Điều kiện khó thì nghĩ từ trường hợp ngược lại rồi phủ định. Vẽ trục thời gian ra giấy.
+- **Câu trả lời phỏng vấn:**
+  「重ならない条件（完全に前／完全に後）を考え、ド・モルガンの法則で否定して重複条件を導きました。境界が接するだけのケースもテストで確認しています。」
+
+### 31. Dùng `+` / `<` với `LocalDateTime`
+
+- **Ngày:** 2026-11-05
+- **Hiện tượng:** `iStart + INTERVIEW_DURATION` báo lỗi compile.
+- **Nguyên nhân:** Toán tử `+ < >` chỉ dùng cho số (và `+` cho String). `LocalDateTime` là object.
+- **Cách giải quyết:** `iStart.plus(INTERVIEW_DURATION)`; so sánh bằng `isBefore` / `isAfter`.
+
+### 32. Khai báo `Duration` thay vì `double`
+
+- **Ngày:** 2026-11-05
+- **Hiện tượng:** `Duration hours = Duration.between(...).toMinutes() / 60.0;` → `merge` báo lỗi.
+- **Nguyên nhân:** Kiểu thay đổi qua chuỗi gọi: `Duration` → `.toMinutes()` = `long` → `/ 60.0` = `double`.
+- **Cách giải quyết:** `double hours = ...`.
+- **Bài học:** Kiểu của biến = kiểu của **kết quả cuối cùng** bên phải dấu `=`.
+
+### 33. Gom giờ theo tuần bằng `Map.merge` và lặp `Map`
+
+- **Ngày:** 2026-11-05
+- **Nội dung:** Cộng giờ ca theo tuần (thứ Hai = `previousOrSame(MONDAY)`), cảnh báo > 28 giờ.
+- **Khó khăn:** Chưa hiểu `merge`; viết `for (Map<...> total : totals)` → lỗi.
+- **Cách giải quyết:** `merge(key, v, Double::sum)` = chưa có key thì `put`, có rồi thì cộng dồn. Lặp map bằng `for (Map.Entry<K,V> e : map.entrySet())`. Dùng `TreeMap` để tuần tự sắp xếp theo ngày.
+- **Điểm chưa xử lý:** Ca qua nửa đêm CN→T2 bị tính hết vào tuần cũ (hiếm, chấp nhận).
+- **Câu trả lời phỏng vấn:**
+  「留学生の資格外活動は週28時間までなので、シフトを週（月曜始まり）ごとに集計し、超過したら警告します。TreeMapとmergeで週ごとに合計しています。」
+
+### 34. IntelliJ báo `Unable to resolve table 'part_time_shifts'` khi commit
+
+- **Ngày:** 2026-11-05
+- **Hiện tượng:** Commit báo 3 errors trong `seed.sql`.
+- **Nguyên nhân:** IntelliJ kiểm tra SQL theo cấu trúc DB đã lưu từ trước, chưa biết bảng mới. MySQL thật đã có bảng (seed chạy ra 8 dòng).
+- **Cách giải quyết:** Commit Anyway. Refresh tab Database để hết báo.
+- **Bài học:** Đọc nội dung lỗi trước khi quyết định bỏ qua; build + test xanh là bằng chứng code Java không lỗi.
+
+### 35. Viết test trước, code sau
+
+- **Ngày:** 2026-11-05
+- **Nội dung:** `ShiftServiceTest` (8 test) có sẵn trước khi viết thuật toán → ban đầu 5 đỏ → sửa từng method đến 13/13 xanh. Sau đó kiểm tra trên trình duyệt: thêm/sửa/xoá ca thì tổng giờ cập nhật đúng (29 → 34 → 31 → 29), thêm phỏng vấn 20:10 vào ca 17–22 thì hiện 「面接と重複」.
+- **Câu trả lời phỏng vấn:**
+  「先にテストを用意し、赤から緑になるまで実装しました。部分的な重複・包含・境界・別の日など、境界値を意識してテストケースを作りました。」
+
+---
+
 <!-- Thêm mục mới theo mẫu:
 ### N. Tiêu đề
 - **Ngày:**
