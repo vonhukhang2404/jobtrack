@@ -1,8 +1,9 @@
 -- =====================================================================
 -- JobTrack - schema.sql  (MySQL 8.0.16+)
 -- Chạy:  mysql -u root -p < schema.sql
--- 6 bảng, tạo theo thứ tự phụ thuộc FK:
+-- 7 bảng, tạo theo thứ tự phụ thuộc FK:
 --   users → companies → applications → interviews / tasks / ai_results
+--   users → part_time_shifts
 -- =====================================================================
 
 -- Chỉ xoá database jobtrack (không đụng tới bookshare, laravel10, studb...)
@@ -132,4 +133,24 @@ CREATE TABLE ai_results (
         'QUESTIONS',    -- câu hỏi phỏng vấn dự đoán
         'AUTO_FILL',    -- trích tên công ty, deadline... để tự điền form
         'ES_REVIEW'))   -- góp ý ES (chức năng thêm)
+) ENGINE = InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 7. part_time_shifts : ca làm thêm (アルバイト), gắn trực tiếp với user
+--    Dùng để cảnh báo trùng giờ với phỏng vấn và tổng giờ/tuần > 28h
+--    (thêm ở tuần 4: database/migrations/001_create_part_time_shifts.sql)
+-- ---------------------------------------------------------------------
+CREATE TABLE part_time_shifts (
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    user_id     BIGINT       NOT NULL,
+    workplace   VARCHAR(100) NOT NULL,
+    start_at    DATETIME     NOT NULL,
+    end_at      DATETIME     NOT NULL,
+    memo        TEXT         NULL,
+    created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_shifts_user_start (user_id, start_at),
+    CONSTRAINT fk_shifts_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT ck_shifts_time CHECK (end_at > start_at)
 ) ENGINE = InnoDB;

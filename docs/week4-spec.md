@@ -13,7 +13,37 @@ Thứ tự mỗi phần: Enum → Entity → Repository → Form → Service →
 
 > Các phần ③④⑤ trong HTML có kiểm tra `!= null`, nên **trang không lỗi** khi Java chưa viết, chỉ là chưa hiện.
 
+### Đã viết sẵn（11/2）
+
+| Phần | File | Còn lại cho bạn |
+|---|---|---|
+| 1. 面接記録 | `InterviewFormat`, `InterviewResult`, `Interview`, `InterviewRepository`, `InterviewForm` | **`InterviewService`, `InterviewController`** |
+| 2. シフト | `ShiftForm`, SQL（`schema.sql`, `migrations/001_create_part_time_shifts.sql`, `seed.sql`） | Chạy SQL → **`PartTimeShift`（Entity）**, Repository, Service, Controller |
+| 3〜5 | | Toàn bộ |
+
+**Thứ tự chạy SQL（chỉ 1 lần）:**
+1. `mysql -u root -p jobtrack < database/migrations/001_create_part_time_shifts.sql`
+2. `mysql -u root -p --default-character-set=utf8mb4 jobtrack < database/seed.sql`（⚠ đặt lại toàn bộ dữ liệu, tài khoản khang bị xoá → đăng ký lại）
+
 ---
+
+### Đã viết thêm（11/5 – Claude）
+| File | Nội dung |
+|---|---|
+| `service/InterviewService`, `controller/InterviewController` | CRUD 面接 + check trùng 回 |
+| `entity/PartTimeShift`, `repository/PartTimeShiftRepository` | ca làm thêm |
+| `service/ScheduleConflict`, `service/WeeklyHours` | record kết quả |
+| `service/ShiftService` | CRUD + **3 method TODO cho Khang** |
+| `controller/ShiftController` | CRUD + check 終了 > 開始 |
+| `controller/CalendarController` | `GET /calendar.ics` |
+| `controller/HomeController` | thêm `upcomingInterviews`, `conflictCount` |
+| `test/.../ShiftServiceTest` | 8 test cho 3 method TODO |
+
+### Khang tự làm
+- [ ] `ShiftService.overlaps`
+- [ ] `ShiftService.findConflicts(List, List)`
+- [ ] `ShiftService.calcWeeklyHours(List)`
+- [ ] `ShiftServiceTest` xanh hết
 
 ## 1. 面接記録（bảng `interviews` đã có）
 

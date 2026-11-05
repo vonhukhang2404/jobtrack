@@ -10,6 +10,7 @@ SET NAMES utf8mb4;   -- gửi dữ liệu dạng UTF-8 (tránh lỗi 1366 với 
 
 -- Xoá dữ liệu cũ để chạy lại file này nhiều lần không bị lỗi trùng khoá
 SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE part_time_shifts;
 TRUNCATE TABLE ai_results;
 TRUNCATE TABLE tasks;
 TRUNCATE TABLE interviews;
@@ -44,7 +45,8 @@ INSERT INTO applications (id, company_id, position, status, applied_at, jd_text)
 INSERT INTO interviews (application_id, round, scheduled_at, format, result, notes) VALUES
 (2, 1, '2026-10-06 14:00:00', 'ONLINE',  'PASSED',  '志望動機を深掘りされた。OOPの説明は良かった'),
 (2, 2, '2026-10-20 10:00:00', 'OFFLINE', 'PENDING', NULL),
-(3, 1, '2026-10-15 13:00:00', 'ONLINE',  'PENDING', NULL);
+(3, 1, '2026-10-15 13:00:00', 'ONLINE',  'PENDING', NULL),
+(4, 1, '2026-11-12 15:00:00', 'ONLINE',  'PENDING', NULL);       -- phỏng vấn sắp tới (cho dashboard)
 
 -- 5. tasks
 INSERT INTO tasks (application_id, title, due_date, done) VALUES
@@ -61,10 +63,25 @@ INSERT INTO ai_results (application_id, type, input_text, output_text) VALUES
    '（求人票の本文）',
    '必要スキル：Java、SQL、Spring Boot\n準備ポイント：DB設計の経験、チーム開発でのGit利用を説明できるようにする');
 
+-- 7. part_time_shifts (ca làm thêm của demo)
+--    ① 10/20 09:00〜13:00 TRÙNG với 二次面接 của サクラ (10/20 10:00) → test cảnh báo trùng
+--    ② Tuần 11/02〜11/08: 5 × 5h + 4h = 29h → test cảnh báo VƯỢT 28h
+--    ③ Tuần 11/09〜: 2h → bình thường
+INSERT INTO part_time_shifts (user_id, workplace, start_at, end_at, memo) VALUES
+(1, 'ローソン 今里店', '2026-10-20 09:00:00', '2026-10-20 13:00:00', '面接と重複（テスト用）'),
+(1, 'ローソン 今里店', '2026-11-02 17:00:00', '2026-11-02 22:00:00', NULL),
+(1, 'ローソン 今里店', '2026-11-03 17:00:00', '2026-11-03 22:00:00', NULL),
+(1, 'ローソン 今里店', '2026-11-04 17:00:00', '2026-11-04 22:00:00', NULL),
+(1, 'ローソン 今里店', '2026-11-05 17:00:00', '2026-11-05 22:00:00', NULL),
+(1, 'ローソン 今里店', '2026-11-06 17:00:00', '2026-11-06 22:00:00', NULL),
+(1, 'ローソン 今里店', '2026-11-07 12:00:00', '2026-11-07 16:00:00', '週28時間を超える（テスト用）'),
+(1, 'ローソン 今里店', '2026-11-09 12:00:00', '2026-11-09 14:00:00', NULL);
+
 -- Kiểm tra số dòng
 SELECT 'users' AS tbl, COUNT(*) AS cnt FROM users
 UNION ALL SELECT 'companies',    COUNT(*) FROM companies
 UNION ALL SELECT 'applications', COUNT(*) FROM applications
 UNION ALL SELECT 'interviews',   COUNT(*) FROM interviews
 UNION ALL SELECT 'tasks',        COUNT(*) FROM tasks
-UNION ALL SELECT 'ai_results',   COUNT(*) FROM ai_results;
+UNION ALL SELECT 'ai_results',   COUNT(*) FROM ai_results
+UNION ALL SELECT 'part_time_shifts', COUNT(*) FROM part_time_shifts;
