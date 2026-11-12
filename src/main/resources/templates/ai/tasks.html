@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>AIで締切を抽出 | JobTrack</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<nav th:replace="~{fragments/header :: navbar}"></nav>
+<div class="container" style="max-width: 900px;">
+    <h1 class="h3 mb-1">AIで締切を抽出</h1>
+    <p class="text-muted mb-4">
+        <span th:text="${jobApplication.company.name}">企業名</span>（<span th:text="${jobApplication.position}">職種</span>）
+    </p>
+
+    <!-- 求人票 -->
+    <div class="card mb-4">
+        <div class="card-header">求人票</div>
+        <div class="card-body">
+            <p class="mb-0" style="white-space: pre-wrap; max-height: 250px; overflow-y: auto;"
+               th:if="${jobApplication.jdText != null and !jobApplication.jdText.isBlank()}"
+               th:text="${jobApplication.jdText}">求人票の本文</p>
+            <p class="text-muted mb-0" th:if="${jobApplication.jdText == null or jobApplication.jdText.isBlank()}">
+                求人票が登録されていません。
+                <a th:href="@{/applications/{id}/edit(id=${jobApplication.id})}">応募の編集画面</a>で貼り付けてください。
+            </p>
+        </div>
+    </div>
+
+    <!-- AIで抽出ボタン（候補をまだ表示していないとき） -->
+    <form th:if="${aiTaskForm == null and jobApplication.jdText != null and !jobApplication.jdText.isBlank()}"
+          th:action="@{/applications/{id}/ai-tasks/extract(id=${jobApplication.id})}" method="post" class="mb-3">
+        <button type="submit" class="btn btn-primary">🤖 AIで締切を抽出する</button>
+        <div class="form-text">求人票の本文だけをAIに送信します。個人情報は送信しません。</div>
+    </form>
+
+    <!-- エラー -->
+    <div class="alert alert-danger" th:if="${aiError != null}" th:text="${aiError}">エラー</div>
+
+    <!-- 候補の確認 -->
+    <div th:if="${aiTaskForm != null}">
+        <h2 class="h5">AIの提案</h2>
+
+        <p class="text-muted" th:if="${aiTaskForm.items.isEmpty()}">
+            求人票から締切は見つかりませんでした。
+        </p>
+
+        <form th:unless="${aiTaskForm.items.isEmpty()}"
+              th:action="@{/applications/{id}/ai-tasks(id=${jobApplication.id})}"
+              th:object="${aiTaskForm}" method="post">
+            <p class="small text-muted">AIは間違えることがあります。内容を確認・修正し、登録するものにチェックしてください。</p>
+
+            <table class="table bg-white align-middle">
+                <thead>
+                <tr>
+                    <th style="width: 80px;">登録</th>
+                    <th>タスク</th>
+                    <th style="width: 200px;">締切</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item, stat : *{items}">
+                    <td class="text-center">
+                        <input type="checkbox" class="form-check-input"
+                               th:field="*{items[__${stat.index}__].selected}">
+                    </td>
+                    <td>
+                        <input type="text" class="form-control"
+                               th:field="*{items[__${stat.index}__].title}">
+                        <div class="text-danger small" th:errors="*{items[__${stat.index}__].title}"></div>
+                    </td>
+                    <td>
+                        <input type="date" class="form-control"
+                               th:field="*{items[__${stat.index}__].dueDate}">
+                        <div class="text-danger small" th:errors="*{items[__${stat.index}__].dueDate}"></div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <button type="submit" class="btn btn-success">チェックしたタスクを登録</button>
+        </form>
+    </div>
+
+    <p class="mt-4"><a th:href="@{/applications}">← 応募一覧へ</a></p>
+</div>
+</body>
+</html>

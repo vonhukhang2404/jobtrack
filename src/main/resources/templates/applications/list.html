@@ -31,6 +31,7 @@
             <td th:text="${a.appliedAt != null} ? ${#temporals.format(a.appliedAt, 'yyyy/MM/dd')} : ''">応募日</td>
             <td class="text-nowrap">
                 <a th:href="@{/applications/{id}/edit(id=${a.id})}" class="btn btn-sm btn-outline-secondary">編集</a>
+                <a th:href="@{/applications/{id}/ai-tasks(id=${a.id})}" class="btn btn-sm btn-outline-primary">🤖 AI締切抽出</a>
 
                 <form th:action="@{/applications/{id}/delete(id=${a.id})}" method="post" class="d-inline"
                       onsubmit="return confirm('この応募を削除しますか？\n関連する面接・タスクも削除されます。');">

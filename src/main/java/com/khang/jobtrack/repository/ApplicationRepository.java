@@ -14,6 +14,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @EntityGraph(attributePaths = "company")
     List<Application> findByCompanyUserIdOrderByCreatedAtDescIdDesc(Long userId);
 
+    // company も一緒に取得（AI画面で企業名を表示するため）
+    @EntityGraph(attributePaths = "company")
     Optional<Application> findByIdAndCompanyUserId(Long id, Long userId);
 
     long countByCompanyUserId(Long userId);

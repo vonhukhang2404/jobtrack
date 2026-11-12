@@ -9,6 +9,7 @@
 <nav th:replace="~{fragments/header :: navbar}"></nav>
 <div class="container">
     <h1 class="h3 mb-3">タスク一覧</h1>
+    <div class="alert alert-success" th:if="${message != null}" th:text="${message}">登録しました</div>
     <a th:href="@{/tasks/new}" class="btn btn-primary mb-3">＋ タスクを追加</a>
     <a th:href="@{/calendar.ics}" class="btn btn-outline-secondary mb-3 ms-2">📅 カレンダーに出力（.ics）</a>
 
