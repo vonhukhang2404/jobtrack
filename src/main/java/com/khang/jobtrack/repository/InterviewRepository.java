@@ -22,6 +22,9 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
     boolean existsByApplicationIdAndRoundAndIdNot(Long applicationId, int round, Long id);
 
+    // 想定質問用：ある応募の面接（回の順）。応募の持ち主チェックは呼び出し側で済ませる
+    List<Interview> findByApplicationIdOrderByRoundAscIdAsc(Long applicationId);
+
     // ダッシュボード用：これからの面接（古い順）
     @EntityGraph(attributePaths = {"application", "application.company"})
     List<Interview> findByApplicationCompanyUserIdAndScheduledAtGreaterThanEqualOrderByScheduledAtAscIdAsc(

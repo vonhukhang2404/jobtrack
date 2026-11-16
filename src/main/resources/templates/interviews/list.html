@@ -48,6 +48,7 @@
             <td th:text="${i.notes}" style="white-space: pre-wrap;">メモ</td>
             <td class="text-nowrap">
                 <a th:href="@{/interviews/{id}/edit(id=${i.id})}" class="btn btn-sm btn-outline-secondary">編集</a>
+                <a th:href="@{/applications/{id}/ai-questions(id=${i.application.id})}" class="btn btn-sm btn-outline-primary" title="この応募の想定質問">💬 質問</a>
                 <form th:action="@{/interviews/{id}/delete(id=${i.id})}" method="post" class="d-inline"
                       onsubmit="return confirm('この面接を削除しますか？');">
                     <button type="submit" class="btn btn-sm btn-outline-danger">削除</button>

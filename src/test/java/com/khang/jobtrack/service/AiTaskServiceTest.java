@@ -1,12 +1,10 @@
 package com.khang.jobtrack.service;
 
 import com.khang.jobtrack.ai.AiException;
-import com.khang.jobtrack.ai.AiClient;
 import com.khang.jobtrack.ai.TaskSuggestion;
-import com.khang.jobtrack.entity.AiResult;
+import com.khang.jobtrack.entity.AiResultType;
 import com.khang.jobtrack.entity.Application;
 import com.khang.jobtrack.entity.User;
-import com.khang.jobtrack.repository.AiResultRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,15 +14,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
- * buildPrompt / parse / キャッシュのテスト（本物のAIは呼ばない）。
+ * buildPrompt / parse / suggest のテスト（本物のAIは呼ばない）。
+ * キャッシュ自体のテストは AiResultCacheServiceTest。
  */
 @ExtendWith(MockitoExtension.class)
 class AiTaskServiceTest {
@@ -36,10 +35,7 @@ class AiTaskServiceTest {
     TaskService taskService;
 
     @Mock
-    AiClient aiClient;
-
-    @Mock
-    AiResultRepository aiResultRepository;
+    AiResultCacheService aiCache;
 
     @InjectMocks
     AiTaskService aiTaskService;
@@ -147,7 +143,7 @@ class AiTaskServiceTest {
                 .isInstanceOf(AiException.class);
     }
 
-    // ---------- suggest（キャッシュ） ----------
+    // ---------- suggest ----------
 
     private Application applicationWithJd(String jdText) {
         Application application = new Application();
@@ -156,35 +152,17 @@ class AiTaskServiceTest {
     }
 
     @Test
-    @DisplayName("suggest: 同じ内容の結果が保存されていれば、AIを呼ばずに再利用する")
-    void suggest_usesCache() {
+    @DisplayName("suggest: AUTO_FILL としてキャッシュ経由でAIを呼び、結果を変換する")
+    void suggest_usesCacheServiceWithAutoFill() {
         User user = new User();
-        when(applicationService.findOwned(user, 1L)).thenReturn(applicationWithJd("ES締切：11月20日"));
-        AiResult cached = new AiResult();
-        cached.setOutputText("{\"tasks\":[{\"title\":\"ES提出\",\"dueDate\":\"2026-11-20\"}]}");
-        when(aiResultRepository.findFirstByApplicationIdAndTypeAndInputTextOrderByIdDesc(any(), any(), any()))
-                .thenReturn(Optional.of(cached));
+        Application application = applicationWithJd("ES締切：11月20日");
+        when(applicationService.findOwned(user, 1L)).thenReturn(application);
+        when(aiCache.getOrGenerate(eq(application), eq(AiResultType.AUTO_FILL), any()))
+                .thenReturn("{\"tasks\":[{\"title\":\"ES提出\",\"dueDate\":\"2026-11-20\"}]}");
 
         List<TaskSuggestion> result = aiTaskService.suggest(user, 1L, TODAY);
 
         assertThat(result).containsExactly(new TaskSuggestion("ES提出", LocalDate.of(2026, 11, 20)));
-        verify(aiClient, never()).generateJson(any());
-        verify(aiResultRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("suggest: 保存された結果がなければAIを呼び、結果を保存する")
-    void suggest_callsAiAndSaves() {
-        User user = new User();
-        when(applicationService.findOwned(user, 1L)).thenReturn(applicationWithJd("ES締切：11月20日"));
-        when(aiResultRepository.findFirstByApplicationIdAndTypeAndInputTextOrderByIdDesc(any(), any(), any()))
-                .thenReturn(Optional.empty());
-        when(aiClient.generateJson(any())).thenReturn("{\"tasks\":[]}");
-
-        assertThat(aiTaskService.suggest(user, 1L, TODAY)).isEmpty();
-
-        verify(aiClient).generateJson(any());
-        verify(aiResultRepository).save(any(AiResult.class));
     }
 
     @Test
@@ -195,6 +173,6 @@ class AiTaskServiceTest {
 
         assertThatThrownBy(() -> aiTaskService.suggest(user, 1L, TODAY))
                 .isInstanceOf(AiException.class);
-        verify(aiClient, never()).generateJson(any());
+        verify(aiCache, never()).getOrGenerate(any(), any(), any());
     }
 }

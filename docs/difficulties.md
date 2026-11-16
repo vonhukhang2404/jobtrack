@@ -389,6 +389,65 @@ Dùng để ôn lại và trả lời câu hỏi phỏng vấn「開発で苦労
 
 ---
 
+## Tuần 6
+
+### 40. Ba tính năng AI lặp lại cùng một đoạn cache → tách class dùng chung
+
+- **Ngày:** 2026-11-16
+- **Nội dung:** Tuần 5 viết cache (`findOrCallAi`) bên trong `AiTaskService`. Tuần 6 thêm 2 tính năng AI nữa → nếu copy thì 3 chỗ giống nhau.
+- **Cách giải quyết:** Tách ra `AiResultCacheService.getOrGenerate(application, type, prompt)`. Mỗi tính năng chỉ còn phần riêng: `buildPrompt` + `parse`. Test cache chuyển sang `AiResultCacheServiceTest`, test của từng tính năng chỉ cần mock `AiResultCacheService`.
+- **Bài học:** Refactor khi thấy lặp lại lần thứ 2–3 (DRY). Có test sẵn nên dám sửa code cũ: sửa xong chạy lại thấy xanh là yên tâm.
+- **Câu trả lời phỏng vấn:**
+  「AI機能が3つに増えたときに、キャッシュの処理を共通のクラスに切り出しました。機能ごとに違うのはプロンプトと回答のチェックだけになり、テストも書きやすくなりました。」
+
+### 41. Truy vấn 面接 theo `applicationId` không có userId → phải kiểm tra quyền trước
+
+- **Ngày:** 2026-11-16
+- **Nội dung:** `InterviewRepository.findByApplicationIdOrderByRoundAscIdAsc` chỉ lọc theo ID 応募, không có điều kiện user.
+- **Cách giải quyết:** Luôn gọi `applicationService.findOwned(user, id)` (404 nếu không phải của mình) **trước** khi đọc 面接. Test: `/applications/9999/ai-questions` → 404.
+- **Bài học:** Khi một query không chứa userId, chỗ gọi nó phải chịu trách nhiệm kiểm tra quyền. Ghi rõ trong comment của repository.
+
+### 42. AI hỏi về 「実務」 dù người dùng là sinh viên → cải thiện prompt
+
+- **Ngày:** 2026-11-16
+- **Hiện tượng:** Chạy thử với サクラシステム: câu Q5 là 「Java、SQLの基礎知識を**実務で**どのように活かしてきたか」. Sinh viên mới tốt nghiệp không trả lời được.
+- **Nguyên nhân:** Prompt không nói người dùng là ai → AI tự giả định là người đã đi làm.
+- **Cách giải quyết:** Thêm vào prompt: 「応募者は新卒の学生…実務経験を前提にした質問はせず、授業・個人開発・チーム開発・アルバイトの経験を聞く」. Thêm assert `contains("新卒")` vào test.
+- **Bài học:** Unit test chỉ kiểm tra được **hình thức** (JSON đúng, đủ phần). **Chất lượng** câu trả lời của AI phải đọc kết quả thật mới thấy → chạy thử, đọc, sửa prompt.
+- **Câu trả lời phỏng vấn:**
+  「実際に動かしてみると、学生なのに『実務経験』を聞く質問が出ました。プロンプトに応募者が新卒の留学生であることを書き、授業や個人開発の経験を聞くように改善しました。」
+
+### 43. Kết quả AI tiếng Việt vẫn giữ thuật ngữ tiếng Nhật
+
+- **Ngày:** 2026-11-16
+- **Nội dung:** Giải thích bằng tiếng Việt nhưng giữ 「エントリーシート」「自己PR」「説明会」 trong ngoặc.
+- **Lý do thiết kế:** Có chủ ý (`SummaryLanguage.VI`): du học sinh hiểu nghĩa bằng tiếng Việt, nhưng khi đi 就活 thật vẫn phải biết từ tiếng Nhật.
+
+### 44. AI chỉnh câu trả lời nhưng tự bịa thêm thành quả
+
+- **Ngày:** 2026-11-16
+- **Hiện tượng:** Câu trả lời gốc chỉ có 「Spring Boot+MySQLで就活管理アプリ、ステータス別の件数を数えるSQL、むずかしかった」. 修正例 lại thêm 「パフォーマンスチューニングを学びました」「ユーザーからは操作性が向上したとの評価をいただきました」.
+- **Nguyên nhân:** Prompt chỉ ghi chung chung 「書かれていない経験や数字を作らないで」 → AI vẫn "làm đẹp" câu trả lời bằng thành quả tưởng tượng.
+- **Cách giải quyết:** Viết prompt cụ thể hơn:
+  - Liệt kê rõ những thứ **không được thêm**: 成果、評価、数字、使った技術、学んだこと、気持ち.
+  - Giải thích **lý do** (bị hỏi sâu sẽ không trả lời được).
+  - Chỗ thiếu → 【ここに苦労をどう解決したか】.
+  - Cuối prompt bắt AI **tự kiểm tra lại**.
+  
+  → Lần chạy lại: 修正例 chỉ còn sự thật của người dùng + 【どのように苦労を解決したか】.
+- **Bài học:** Lệnh cấm mơ hồ thì AI dễ bỏ qua; phải **cụ thể + có lý do + tự kiểm tra**. Tính năng "sửa câu trả lời phỏng vấn" mà bịa kinh nghiệm thì có hại cho người dùng.
+- **Câu trả lời phỏng vấn:**
+  「回答の添削で、AIが本人の書いていない成果を足してしまいました。面接で深く聞かれると答えられなくなるので、足してはいけないものを具体的に並べ、足りない部分は【 】で本人が書き足すようにプロンプトを改善しました。」
+
+### 45. Câu hỏi giống hệt nhau mỗi lần tạo
+
+- **Ngày:** 2026-11-16
+- **Nguyên nhân:** Cache theo prompt + `temperature: 0` → cùng đầu vào thì luôn ra cùng kết quả. Tốt cho tính năng trích deadline, nhưng không hợp với luyện phỏng vấn.
+- **Cách giải quyết:** Nút 「別の質問を作る」: gửi các câu đã ra (hidden input, tối đa 20 câu, đã lọc trùng / cắt dài) → thêm vào prompt 「これらとは違う質問を」 → prompt khác → cache khác → câu hỏi mới. Không cần sửa `AiClient` hay temperature.
+- **Bài học:** Dùng lại cơ chế có sẵn (cache theo prompt) thay vì thêm tham số mới. Giá trị gửi từ màn hình (`excluded`) phải được lọc trước khi đưa vào prompt.
+
+---
+
 <!-- Thêm mục mới theo mẫu:
 ### N. Tiêu đề
 - **Ngày:**

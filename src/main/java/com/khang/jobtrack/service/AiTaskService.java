@@ -2,15 +2,12 @@ package com.khang.jobtrack.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.khang.jobtrack.ai.AiException;
-import com.khang.jobtrack.ai.AiClient;
 import com.khang.jobtrack.ai.TaskSuggestion;
 import com.khang.jobtrack.dto.AiTaskForm;
 import com.khang.jobtrack.dto.TaskForm;
-import com.khang.jobtrack.entity.AiResult;
 import com.khang.jobtrack.entity.AiResultType;
 import com.khang.jobtrack.entity.Application;
 import com.khang.jobtrack.entity.User;
-import com.khang.jobtrack.repository.AiResultRepository;
 import org.springframework.stereotype.Service;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.json.JsonMapper;
@@ -19,7 +16,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * 求人票（応募の jd_text）からAIで締切を読み取り、タスク候補を作る。
@@ -33,16 +29,14 @@ public class AiTaskService {
 
     private final ApplicationService applicationService;
     private final TaskService taskService;
-    private final AiClient aiClient;
-    private final AiResultRepository aiResultRepository;
+    private final AiResultCacheService aiCache;
     private final JsonMapper jsonMapper = JsonMapper.builder().build();
 
     public AiTaskService(ApplicationService applicationService, TaskService taskService,
-                         AiClient aiClient, AiResultRepository aiResultRepository) {
+                         AiResultCacheService aiCache) {
         this.applicationService = applicationService;
         this.taskService = taskService;
-        this.aiClient = aiClient;
-        this.aiResultRepository = aiResultRepository;
+        this.aiCache = aiCache;
     }
 
     // ===================================================================
@@ -56,7 +50,7 @@ public class AiTaskService {
             throw new AiException("この応募には求人票が登録されていません。応募の編集画面で求人票を貼り付けてください。");
         }
         String prompt = buildPrompt(jdText, today);
-        String json = findOrCallAi(application, prompt);
+        String json = aiCache.getOrGenerate(application, AiResultType.AUTO_FILL, prompt); // キャッシュ or AI
         return parse(json, today);
     }
 
@@ -78,7 +72,7 @@ public class AiTaskService {
     }
 
     // ===================================================================
-    // プロンプト・回答の検証・キャッシュ
+    // プロンプト・回答の検証
     // ===================================================================
 
     /**
@@ -177,33 +171,6 @@ public class AiTaskService {
             }
         }
         return result;
-    }
-
-    /**
-     * 同じ応募・同じプロンプトで前にAIを呼んでいれば、その結果（ai_results）を再利用する。
-     * なければ AI を呼び、結果を ai_results に保存してから返す。
-     * ヒント：aiResultRepository.findFirstByApplicationIdAndTypeAndInputTextOrderByIdDesc(...)
-     *         type は AiResultType.AUTO_FILL、inputText は prompt
-     */
-    private String findOrCallAi(Application application, String prompt) {
-        // 前に同じ内容で呼んでいれば、保存した結果を使う（APIを呼ばない）
-        Optional<AiResult> cached = aiResultRepository.findFirstByApplicationIdAndTypeAndInputTextOrderByIdDesc(
-                application.getId(), AiResultType.AUTO_FILL, prompt);
-        if (cached.isPresent()) {
-            return cached.get().getOutputText();
-        }
-
-        // なければAIを呼び、結果を保存する
-        String json = aiClient.generateJson(prompt);
-
-        AiResult aiResult = new AiResult();
-        aiResult.setApplication(application);
-        aiResult.setType(AiResultType.AUTO_FILL);
-        aiResult.setInputText(prompt);
-        aiResult.setOutputText(json);
-        aiResultRepository.save(aiResult);
-
-        return json;
     }
 
     // ---- AIが返すJSONの形 {"tasks":[{"title":"...","dueDate":"..."}]} ----
