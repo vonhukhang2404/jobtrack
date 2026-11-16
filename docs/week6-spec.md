@@ -86,7 +86,7 @@ Controller ─→ JdSummaryService / InterviewQuestionService / AiTaskService
 - [x] Import lại DMM → 「応募 0 件（既存 1 件）」, mặc định không tick ✅ / AI đổi cách viết 職種 → dùng 職種 của 応募 có sẵn
 - [x] Rebuild + test 64/64 → import lại DMM: 職種 mặc định = 応募 có sẵn, hiện 「既存の応募」 ✅
 - [x] Xoá 2 応募 trùng（DMM.com, KDDIアイレット）
-- [ ] Commit + push
+- [x] Commit + push
 
 ## Câu hỏi phỏng vấn nên chuẩn bị
 
