@@ -348,6 +348,47 @@ Dùng để ôn lại và trả lời câu hỏi phỏng vấn「開発で苦労
 
 ---
 
+## Tuần 5
+
+### 36. Trang AI lỗi 500: `application` là tên dành riêng của Thymeleaf
+
+- **Ngày:** 2026-11-12
+- **Hiện tượng:** Mở `/applications/{id}/ai-tasks` → 500. Log: `Property or field 'name' cannot be found on null` ở `${application.company.name}`.
+- **Nguyên nhân:** Trong Thymeleaf + Spring, `${application}` trỏ tới **ServletContext** (phạm vi application), không phải biến trong Model. Nên `application.company` = `null`.
+- **Cách giải quyết:** Đổi tên Model thành `jobApplication`.
+- **Bài học:** Unit test chỉ kiểm tra Service, không bắt được lỗi ở màn hình → phải chạy thử trên trình duyệt. Tránh đặt tên Model là `application`, `session`, `request`, `param`.
+- **Câu trả lời phỏng vấn:**
+  「単体テストはすべて通っていましたが、画面で500エラーが出ました。Thymeleafでは application が予約された名前だったのが原因で、Modelの名前を変えて解決しました。テストだけでなく実際に動かして確認する大切さを学びました。」
+
+### 37. AI trả về 404: model đã bị nhà cung cấp ngừng
+
+- **Ngày:** 2026-11-12
+- **Hiện tượng:** Bấm 「AIで締切を抽出する」 → 「AIへのリクエストが拒否されました（404）」.
+- **Nguyên nhân:** Model mặc định `llama-3.3-70b-versatile` đã bị Groq ngừng từ 2026-08-16.
+- **Cách giải quyết:** Đổi sang `openai/gpt-oss-120b` (Groq khuyến nghị). Tên model để trong `application.properties` và có thể ghi đè bằng biến môi trường `GROQ_MODEL` → đổi model không cần sửa code.
+- **Bài học:** Model AI có "hạn sử dụng". Kiểm tra trang deprecations của nhà cung cấp; để tên model ở cấu hình, không viết cứng trong code. Nhờ đã đổi lỗi HTTP thành `AiException` nên app không sập mà hiện thông báo dễ hiểu.
+- **Câu trả lời phỏng vấn:**
+  「AIのモデルが提供終了になっていて404になりました。モデル名を設定ファイルと環境変数で変えられるようにしていたので、コードを変えずに対応できました。」
+
+### 38. API key bị lộ trong chat
+
+- **Ngày:** 2026-11-12
+- **Hiện tượng:** Dán Groq API key vào chat để nhờ cài đặt.
+- **Cách giải quyết:** Xoá key cũ trên console.groq.com → tạo key mới → tự đặt vào Run Configuration của IntelliJ (`GROQ_API_KEY`). Kiểm tra repo: key chỉ nằm trong `.idea/workspace.xml`, mà `.idea` đã có trong `.gitignore`.
+- **Bài học:** Key đã lộ ở đâu (chat, ảnh chụp màn hình, Git) thì coi như đã bị lộ → thu hồi ngay, không chỉ xoá chỗ bị lộ. Che mật khẩu/key trước khi chụp màn hình.
+- **Câu trả lời phỏng vấn:**
+  「APIキーを誤って共有してしまったことがあり、すぐに無効化して新しいキーを発行しました。キーは環境変数で管理し、Gitに含まれないことも確認しています。」
+
+### 39. Đọc và kiểm tra kết quả AI
+
+- **Ngày:** 2026-11-09
+- **Nội dung:** Thiết kế prompt (ngày hôm nay, mẫu JSON, cấm bịa, không có thì `{"tasks":[]}`) và `parse` (bỏ ngày sai định dạng, ngày quá khứ, title rỗng, tối đa 10). Cache bằng `ai_results`.
+- **Bài học:** Kết quả AI = dữ liệu bên ngoài, giống input người dùng → luôn kiểm tra lại. AI chỉ đề xuất, người dùng xác nhận rồi mới lưu.
+- **Câu trả lời phỏng vấn:**
+  「AIの回答は必ず正しいとは限らないので、提案だけにして、利用者の確認後に保存します。コード側でも日付の形式や過去日を検証しています。」
+
+---
+
 <!-- Thêm mục mới theo mẫu:
 ### N. Tiêu đề
 - **Ngày:**

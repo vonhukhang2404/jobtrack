@@ -49,9 +49,9 @@ Nguyên tắc: **AI chỉ đề xuất, người dùng xác nhận rồi mới l
 ## Khang tự làm
 
 - [ ] Đọc hiểu 3 method trên, tự giải thích lại được (xem câu hỏi phỏng vấn bên dưới)
-- [ ] `AiTaskServiceTest` xanh hết
-- [ ] Thử với 求人票 thật (dán vào 応募 → 編集)
-- [ ] Test bảo mật: `/applications/{id người khác}/ai-tasks` → 404
+- [x] `AiTaskServiceTest` xanh hết（24/24, 11/12）
+- [x] Thử với 求人票 thật (dán vào 応募 → 編集)（11/12: đúng 2 mục, lưu task OK, cache 37ms）
+- [x] Test bảo mật: `/applications/{id người khác}/ai-tasks` → 404（11/12）
 
 ## Câu hỏi phỏng vấn nên chuẩn bị
 
@@ -60,3 +60,11 @@ Nguyên tắc: **AI chỉ đề xuất, người dùng xác nhận rồi mới l
 | AIを使うとき気をつけたことは？ | AIは間違える → 提案だけ、人が確認して保存。回答はJSON指定＋検証（日付・過去日・件数） |
 | API料金・回数制限は？ | 同じ入力は ai_results に保存して再利用（キャッシュ） |
 | セキュリティは？ | APIキーは環境変数、ヘッダーで送信。個人情報は送らない。他人の応募は404 |
+
+## Kết quả（11/12）
+
+| Hạng mục | Kết quả |
+|---|---|
+| Commit | `3247656` Add AI deadline extraction from job descriptions (Groq) |
+| Lỗi phát hiện khi chạy thật | Tên Model `application` (Thymeleaf) → `jobApplication`; model Groq ngừng → `openai/gpt-oss-120b` |
+| Chi tiết | `difficulties.md` mục 36–39 |

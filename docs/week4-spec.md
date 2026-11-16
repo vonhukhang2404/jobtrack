@@ -40,10 +40,10 @@ Thứ tự mỗi phần: Enum → Entity → Repository → Form → Service →
 | `test/.../ShiftServiceTest` | 8 test cho 3 method TODO |
 
 ### Khang tự làm
-- [ ] `ShiftService.overlaps`
-- [ ] `ShiftService.findConflicts(List, List)`
-- [ ] `ShiftService.calcWeeklyHours(List)`
-- [ ] `ShiftServiceTest` xanh hết
+- [x] `ShiftService.overlaps`
+- [x] `ShiftService.findConflicts(List, List)`
+- [x] `ShiftService.calcWeeklyHours(List)`
+- [x] `ShiftServiceTest` xanh hết
 
 ## 1. 面接記録（bảng `interviews` đã có）
 
