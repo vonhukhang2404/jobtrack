@@ -60,6 +60,32 @@ Controller ─→ JdSummaryService / InterviewQuestionService / AiTaskService
 - [x] 別の質問を作る → 5 câu khác hoàn toàn
 - [x] 回答の添削 → phát hiện AI bịa thành quả → sửa prompt → chạy lại OK（difficulties #44）
 - [x] Toàn bộ test 47/47
+- [x] Commit + push（`6d1dc27`）
+
+## Thêm: 📥 資料の取り込み（11/16）
+
+```
+/imports → file .docx / .txt hoặc dán văn bản → AI tách theo công ty（totalCount để phát hiện bỏ sót）
+→ xác nhận（tick・sửa, nhãn 登録済み, link 🔍 tìm kiếm）→ @Transactional lưu: 企業 + 応募（未応募, 求人票）+ タスク説明会
+```
+
+| File | Nội dung |
+|---|---|
+| `importer/DocxTextExtractor`, `DocumentReadException` | Đọc .docx bằng JDK, chống XXE / ZIP bomb |
+| `service/CompanyImportService` | prompt, parse（totalCount, N1→日本語, 職種「ほか」）, `toFormItems`, `save`（@Transactional） |
+| `dto/CompanyImportForm`, `controller/ImportController`, `templates/imports/index.html` | Màn hình |
+| `CompanyRepository.findByUserIdAndName`, `GroqClient`（max_completion_tokens）, navbar, `application.properties`（upload 5MB） | |
+| Test | `DocxTextExtractorTest`（4）, `CompanyImportServiceTest`（11）→ tổng 62 |
+
+- [x] Tài liệu thầy gửi（9 công ty）→ đủ 9, ngày đúng（năm 2027 cho tháng 1）
+- [x] Lưu 2 công ty → 企業 2, 応募 2, タスク 2
+- [x] 💬 質問 cho KDDIアイレット（クラウドインフラ）→ câu hỏi về cloud / server
+- [x] Rebuild + test 62/62（sau khi sửa N1）
+- [x] Khang tải file .docx → 9 công ty → lưu tất cả → phát hiện 応募 trùng（difficulties #50）→ sửa
+- [x] Rebuild + test 63/63（sau khi sửa trùng）
+- [x] Import lại DMM → 「応募 0 件（既存 1 件）」, mặc định không tick ✅ / AI đổi cách viết 職種 → dùng 職種 của 応募 có sẵn
+- [x] Rebuild + test 64/64 → import lại DMM: 職種 mặc định = 応募 có sẵn, hiện 「既存の応募」 ✅
+- [x] Xoá 2 応募 trùng（DMM.com, KDDIアイレット）
 - [ ] Commit + push
 
 ## Câu hỏi phỏng vấn nên chuẩn bị

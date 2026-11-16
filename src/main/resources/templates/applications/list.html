@@ -9,6 +9,7 @@
 <nav th:replace="~{fragments/header :: navbar}"></nav>
 <div class="container">
     <h1 class="h3 mb-3">応募一覧</h1>
+    <div class="alert alert-success" th:if="${message != null}" th:text="${message}">登録しました</div>
     <a th:href="@{/applications/new}" class="btn btn-primary mb-3">＋ 応募を追加</a>
 
     <p th:if="${applications.isEmpty()}">まだ応募が登録されていません。</p>
@@ -26,7 +27,7 @@
         <tbody>
         <tr th:each="a : ${applications}">
             <td th:text="${a.company.name}">企業名</td>
-            <td th:text="${a.position}">職種</td>
+            <td th:text="${#strings.abbreviate(a.position, 30)}" th:title="${a.position}">職種</td>
             <td th:text="${a.status.label}">ステータス</td>
             <td th:text="${a.appliedAt != null} ? ${#temporals.format(a.appliedAt, 'yyyy/MM/dd')} : ''">応募日</td>
             <td class="text-nowrap">

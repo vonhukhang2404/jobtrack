@@ -446,6 +446,62 @@ Dùng để ôn lại và trả lời câu hỏi phỏng vấn「開発で苦労
 - **Cách giải quyết:** Nút 「別の質問を作る」: gửi các câu đã ra (hidden input, tối đa 20 câu, đã lọc trùng / cắt dài) → thêm vào prompt 「これらとは違う質問を」 → prompt khác → cache khác → câu hỏi mới. Không cần sửa `AiClient` hay temperature.
 - **Bài học:** Dùng lại cơ chế có sẵn (cache theo prompt) thay vì thêm tham số mới. Giá trị gửi từ màn hình (`excluded`) phải được lọc trước khi đưa vào prompt.
 
+### 46. Ý tưởng "đưa cả tài liệu vào, tự tra web" → giữ đúng 企画書
+
+- **Ngày:** 2026-11-16
+- **Nội dung:** Muốn đưa file thông báo 説明会 của trường (Word, 9 công ty) vào app để tự sắp xếp, nếu thiếu thì tự tra web.
+- **Quyết định:** Làm phần "AI sắp xếp tài liệu của người dùng thành dữ liệu" (đúng 企画書: AI xử lý dữ liệu của người dùng). **Không** tự tra web (lệch 企画書, cần API tìm kiếm, dễ sai) → thay bằng link 「🔍 公式サイト・採用情報を検索」 để người dùng tự kiểm tra.
+- **Bài học:** Ý tưởng mới → so với 企画書 và thời gian còn lại trước khi làm. Chọn phần cốt lõi, để phần rủi ro sau.
+
+### 47. AI bỏ sót 7/9 công ty khi tài liệu dài
+
+- **Ngày:** 2026-11-16
+- **Hiện tượng:** Tài liệu có 9 công ty (①〜⑨) nhưng AI chỉ trả về 2 công ty, không báo lỗi gì.
+- **Cách giải quyết:**
+  - Prompt: 「1社も省略せずに、①②③…の番号すべて」.
+  - Bắt AI trả thêm `totalCount` (số công ty nó đếm được) → nếu số công ty trả về ít hơn → hiện cảnh báo vàng.
+  - Tăng `max_completion_tokens` lên 8192 để câu trả lời dài không bị cắt.
+  
+  → Chạy lại: đủ 9 công ty, ngày tháng đúng (kể cả 1/15 → 2027-01-15).
+- **Bài học:** AI có thể "lười" mà vẫn trả JSON đúng định dạng → test đơn vị không bắt được. Cần **kiểm tra số lượng** (AI tự đếm, code so sánh).
+- **Câu trả lời phỏng vấn:**
+  「9社の資料なのに、AIが2社だけ返すことがありました。AIに企業数も数えさせ、返ってきた数と比べて足りなければ注意を表示するようにしました。」
+
+### 48. Đọc file Word không dùng thư viện + an toàn
+
+- **Ngày:** 2026-11-16
+- **Nội dung:** .docx = file ZIP; nội dung ở `word/document.xml`. Đọc bằng `ZipInputStream` + DOM của JDK, không thêm Apache POI.
+- **Bảo mật:**
+  - **XXE**: XML có thể chứa `<!DOCTYPE … SYSTEM "file:///etc/passwd">` để đọc file trên server → cấm DOCTYPE.
+  - **ZIP bomb**: file nhỏ nhưng giải nén ra rất lớn → giới hạn 10MB khi đọc.
+  - Upload tối đa 5MB, chỉ nhận .docx / .txt.
+  - Có test cho trường hợp DOCTYPE.
+- **Câu trả lời phỏng vấn:**
+  「アップロードされたファイルは信頼できないデータとして扱い、XXEとZIP爆弾の対策をしています。」
+
+### 49. Các lỗi nhỏ khi chạy với tài liệu thật
+
+- **Ngày:** 2026-11-16
+- 職種 của DMM dài hơn 100 ký tự → bị cắt giữa chữ. → Prompt bảo viết tên 職種 ngắn; nếu vẫn dài thì không cắt giữa chữ mà thêm 「ほか」.
+- 「N1以上」 bị AI đưa vào 「留学生の条件」 thay vì 「日本語」 → code tự chuyển sang 「日本語」 (regex `N[1-5](以上)?`).
+- **Bài học:** Phải chạy với **dữ liệu thật** mới thấy những lỗi này.
+
+### 50. Import cùng tài liệu 2 lần → 応募 và タスク bị trùng
+
+- **Ngày:** 2026-11-16
+- **Hiện tượng:** DMM.com, KDDIアイレット đã import 1 lần; import lại cả tài liệu → mỗi công ty có **2 応募 giống hệt** + 2 task 説明会.
+- **Nguyên nhân:** Chỉ chống trùng **công ty** (theo tên), chưa chống trùng **応募** và **タスク**.
+- **Cách giải quyết:**
+  - 応募: cùng công ty + cùng 職種 → dùng lại (`findFirstByCompanyIdAndPosition`).
+  - タスク: cùng 応募 + cùng tên + cùng ngày → không tạo (`existsByApplicationIdAndTitleAndDueDate`).
+  - Màn hình xác nhận: công ty 「登録済み」 mặc định **không tick**.
+  - Thông báo: 「応募 X 件（既存 Y 件）」.
+  - Test 「2回取り込んでも二重にならない」.
+- **Bài học:** Thao tác "nhập hàng loạt" phải nghĩ tới việc **chạy lại nhiều lần** (idempotent). Người dùng rất hay import lại cùng một file.
+- **Phát hiện thêm khi test lại:** AI mỗi lần viết 職種 hơi khác (「インフラ**領域**」 vs 「インフラ**エンジニア**」) → so sánh chính xác không nhận ra trùng. → Với công ty 登録済み: lấy 職種 của 応募 đã có làm giá trị mặc định + hiện 「既存の応募：…」 để người dùng chọn. **Không dựa vào việc AI trả lời giống nhau mỗi lần.**
+- **Câu trả lời phỏng vấn:**
+  「同じ資料を2回取り込むと応募が二重になる不具合がありました。企業・応募・タスクそれぞれで既存のデータを確認し、何回取り込んでも同じ結果になるようにしました。」
+
 ---
 
 <!-- Thêm mục mới theo mẫu:

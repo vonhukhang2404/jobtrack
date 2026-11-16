@@ -20,6 +20,12 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     long countByCompanyUserId(Long userId);
 
+    // 取り込み用：同じ企業・同じ職種の応募がすでにあれば、それを使う
+    Optional<Application> findFirstByCompanyIdAndPosition(Long companyId, String position);
+
+    // 取り込み用：登録済みの企業の応募（確認画面で既存の職種を見せる）
+    List<Application> findByCompanyUserIdAndCompanyNameOrderByIdAsc(Long userId, String companyName);
+
     @Query("""
             SELECT a.status AS status, COUNT(a) AS count
             FROM Application a

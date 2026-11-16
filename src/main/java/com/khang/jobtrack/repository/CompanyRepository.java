@@ -15,6 +15,9 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
 
     boolean existsByUserIdAndName(Long userId, String name);
 
+    // 取り込み用：同じ名前の企業がすでにあれば、それを使う
+    Optional<Company> findByUserIdAndName(Long userId, String name);
+
     boolean existsByUserIdAndNameAndIdNot(Long userId, String name, Long id);
 
     long countByUserId(Long userId);

@@ -56,6 +56,7 @@ public class GroqClient implements AiClient {
                 "model", model,
                 "messages", List.of(Map.of("role", "user", "content", prompt)),
                 "temperature", 0,
+                "max_completion_tokens", 8192, // 資料の取り込みなど、回答が長くなる場合に途中で切れないように
                 "response_format", Map.of("type", "json_object")
         );
 

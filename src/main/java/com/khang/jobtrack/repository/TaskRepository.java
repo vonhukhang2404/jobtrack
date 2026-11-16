@@ -15,6 +15,9 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 
     Optional<Task> findByIdAndApplicationCompanyUserId(Long id, Long userId);
 
+    // 取り込み用：同じ応募に同じ名前・同じ締切のタスクがあれば作らない
+    boolean existsByApplicationIdAndTitleAndDueDate(Long applicationId, String title, LocalDate dueDate);
+
     @EntityGraph(attributePaths = {"application", "application.company"})
     List<Task> findByApplicationCompanyUserIdAndDoneFalseAndDueDateLessThanEqualOrderByDueDateAscIdAsc(
             Long userId, LocalDate limit);
