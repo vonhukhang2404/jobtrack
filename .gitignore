@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### 環境変数（パスワード・APIキー）###
+.env
+.env.*

@@ -57,7 +57,7 @@
 
 | 時期 | 機能 |
 |---|---|
-| 第7週 | AWSへのデプロイ |
+| 第7週 | クラウドへのデプロイ（Supabase・Vercel） |
 
 ---
 
@@ -68,12 +68,13 @@
 | 言語 | Java 21 |
 | フレームワーク | Spring Boot 4.1（Spring MVC / Spring Data JPA / Spring Security / Bean Validation） |
 | 画面 | Thymeleaf、Bootstrap 5 |
-| データベース | MySQL 8.4 |
+| データベース | PostgreSQL（Supabase）※第6週までは MySQL 8.4 |
 | テスト | JUnit 5、Mockito、AssertJ |
 | ビルド | Maven |
 | 開発環境 | IntelliJ IDEA、Git / GitHub |
 | 生成AI | Groq API（`openai/gpt-oss-120b`）。`AiClient` インターフェースにより、設定だけで Gemini API に切り替え可能 |
-| 予定 | AWS（EC2・RDS） |
+| セッション | Spring Session JDBC（ログイン状態をDBに保存） |
+| デプロイ | Docker、Vercel（Container Runtime） |
 
 ---
 
@@ -90,7 +91,7 @@
 ### アーキテクチャ
 
 ```
-ブラウザ → Controller → Service → Repository → MySQL
+ブラウザ → Controller → Service → Repository → PostgreSQL
               ↑            ↑
            Form(DTO)    Entity
 ```
@@ -159,8 +160,15 @@
 
 - CSRF対策（フォームにトークンを自動付与、ログアウトはPOST）
 - XSS対策（`th:text` で出力をエスケープ）
-- DBのパスワードは環境変数で管理し、Gitには含めない
-- アプリ用のDBユーザーは必要最小限の権限のみ
+- DBのパスワード・APIキーは環境変数で管理し、Gitには含めない
+- アプリ用のDBユーザー（`jobtrack_app`）は、データの読み書きだけの最小権限
+- Supabase が自動で公開する REST API は、RLS（行レベルセキュリティ）と権限の取り消しで閉じている（アプリはJDBCでのみ接続）
+
+### 8. クラウドへのデプロイ
+
+- **MySQL → PostgreSQL**：無料のクラウドDB（Supabase）に合わせて移行。JPAを使っていたため Java のコードはほとんど変えず、SQLの違い（自動採番、更新日時の自動更新はトリガーで実装）だけ対応しました。
+- **サーバーレスでのログイン状態**：Vercel はアクセスがないとアプリを止めるため、メモリのセッションが消えてしまいます。Spring Session JDBC でセッションをDBに保存しています。
+- **Docker**：マルチステージビルドで、実行用のイメージには JRE だけを入れています。サーバーは UTC なので、タイムゾーンを日本時間に設定し、root ではないユーザーで実行しています。
 
 開発中に苦労した点と解決方法は [docs/difficulties.md](docs/difficulties.md) にまとめています。
 
@@ -168,31 +176,28 @@
 
 ## ローカルでの起動方法
 
-### 1. データベースの準備
+DBは Supabase（PostgreSQL）を使います。パソコンにDBをインストールする必要はありません。
 
-```bash
-mysql -u root -p < database/schema.sql
-mysql -u root -p --default-character-set=utf8mb4 jobtrack < database/seed.sql
-```
+### 1. データベースの準備（Supabase）
 
-既存のDB（第3週以前に作成）を使う場合は、`schema.sql` を再実行せずに追加分だけ実行します（`schema.sql` はDBを作り直します）。
+1. [supabase.com](https://supabase.com) でプロジェクトを作成（リージョン：Northeast Asia (Tokyo)）
+2. SQL Editor で、次のファイルを順番に実行します。
 
-```bash
-mysql -u root -p jobtrack < database/migrations/001_create_part_time_shifts.sql
-```
+| 順番 | ファイル | 内容 |
+|---|---|---|
+| 1 | `database/postgres/01_schema.sql` | テーブル作成（再実行するとデータは消えます） |
+| 2 | `database/postgres/02_security.sql` | アプリ用ユーザー作成・RLS。`CHANGE_ME` を任意のパスワードに変えて実行（変えたファイルはコミットしない） |
+| 3 | `database/postgres/03_seed.sql` | デモデータ（任意） |
 
-`database/create_app_user.sql` の `CHANGE_ME` を任意のパスワードに変更してから実行します。
-
-```bash
-mysql -u root -p < database/create_app_user.sql
-```
+3. 「Connect」→「Session pooler」の接続情報を確認します。
 
 ### 2. 環境変数の設定
 
 | 変数名 | 内容 |
 |---|---|
-| `DB_USERNAME` | `jobtrack_app`（省略可） |
-| `DB_PASSWORD` | 上で設定したパスワード |
+| `DB_URL` | `jdbc:postgresql://<Session pooler のホスト>:5432/postgres?sslmode=require` |
+| `DB_USERNAME` | `jobtrack_app.<プロジェクトID>` |
+| `DB_PASSWORD` | `02_security.sql` で設定したパスワード |
 | `GROQ_API_KEY` | Groq の APIキー（AI機能を使う場合。[console.groq.com](https://console.groq.com) で発行） |
 | `GROQ_MODEL` | 使用するモデル（省略可、初期値 `openai/gpt-oss-120b`） |
 
@@ -204,11 +209,19 @@ mysql -u root -p < database/create_app_user.sql
 
 http://localhost:8080 にアクセスします。
 
-テストの実行：
+テストの実行（`contextLoads` は DB に接続するため、上の環境変数が必要です）：
 
 ```bash
 ./mvnw test
 ```
+
+### 4. デプロイ（Vercel）
+
+1. Vercel で GitHub のリポジトリを読み込みます（ルートの `Dockerfile` から自動でビルド）。
+2. 環境変数 `DB_URL`・`DB_USERNAME`・`DB_PASSWORD`・`GROQ_API_KEY`・`PORT=8080` を設定します。
+3. リージョンは `vercel.json` で東京（`hnd1`）にしています。
+
+> 第6週までの MySQL 版のSQLは `database/schema.sql` などに残しています。
 
 ### デモアカウント
 

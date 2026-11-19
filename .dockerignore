@@ -1,0 +1,9 @@
+# Docker のビルドに不要なもの（イメージを小さく・秘密情報を入れない）
+.git
+.idea
+target
+*.iml
+database
+docs
+HELP.md
+.env
