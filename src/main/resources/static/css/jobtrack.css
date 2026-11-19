@@ -1,0 +1,253 @@
+/* =====================================================================
+   JobTrack — 和モダン テーマ（藍 × 朱）
+   Bootstrap 5.3 の CSS 変数を上書きして、ライト / ダークの 2 テーマを作る。
+   <html data-bs-theme="light|dark"> で切り替え（/js/theme.js）
+   ===================================================================== */
+
+:root,
+[data-bs-theme="light"] {
+    --jt-ai: #1F3A5F;            /* 藍 */
+    --jt-ai-hover: #16304F;
+    --jt-shu: #C0533A;           /* 朱（アクセント） */
+    --jt-shu-text: #8F3424;      /* 朱の文字色（白背景で 4.5:1 以上） */
+    --jt-surface: #FFFFFF;       /* カード・表の背景 */
+    --jt-divider: #EDE7DB;
+    --jt-bar-track: #EFEAE0;
+    --jt-bar-on: #1F3A5F;
+    --jt-bar-off: #A9A293;
+    --jt-header-bg: #1F3A5F;
+    --jt-header-text: #F7F4EE;
+    --jt-header-muted: #DCE3EC;
+    --jt-header-ctrl: #5D7598;
+    --jt-alert-border: #E8C9BF;
+
+    --bs-body-bg: #F7F4EE;       /* 和紙 */
+    --bs-body-bg-rgb: 247, 244, 238;
+    --bs-body-color: #1C1C1C;
+    --bs-body-color-rgb: 28, 28, 28;
+    --bs-secondary-color: #5C564B;
+    --bs-tertiary-bg: #EFEAE0;
+    --bs-border-color: #D9D2C3;
+    --bs-primary: #1F3A5F;
+    --bs-primary-rgb: 31, 58, 95;
+    --bs-primary-text-emphasis: #1F3A5F;
+    --bs-primary-bg-subtle: #E3E9F1;
+    --bs-primary-border-subtle: #B9C7D9;
+    --bs-danger: #B2432D;
+    --bs-danger-rgb: 178, 67, 45;
+    --bs-danger-text-emphasis: #8F3424;
+    --bs-danger-bg-subtle: #F8E6E0;
+    --bs-danger-border-subtle: #E8C9BF;
+    --bs-link-color: #1F3A5F;
+    --bs-link-color-rgb: 31, 58, 95;
+    --bs-link-hover-color: #0F2440;
+    --bs-link-hover-color-rgb: 15, 36, 64;
+    --bs-border-radius: 4px;
+    --bs-border-radius-sm: 3px;
+    --bs-border-radius-lg: 6px;
+    --bs-focus-ring-color: rgba(31, 58, 95, .3);
+}
+
+[data-bs-theme="dark"] {
+    --jt-ai: #9DB8DB;            /* 藍を明るく（暗い背景で読めるように） */
+    --jt-ai-hover: #B8CDE8;
+    --jt-shu: #C0533A;
+    --jt-shu-text: #F0A08C;
+    --jt-surface: #19202B;
+    --jt-divider: #252D3A;
+    --jt-bar-track: #252D3A;
+    --jt-bar-on: #9DB8DB;
+    --jt-bar-off: #5F6878;
+    --jt-header-bg: #0B1018;
+    --jt-header-text: #ECE7DC;
+    --jt-header-muted: #B9C2CF;
+    --jt-header-ctrl: #3A4558;
+    --jt-alert-border: #6B3A2E;
+
+    --bs-body-bg: #11161F;       /* 墨 */
+    --bs-body-bg-rgb: 17, 22, 31;
+    --bs-body-color: #ECE7DC;
+    --bs-body-color-rgb: 236, 231, 220;
+    --bs-secondary-color: #A9A293;
+    --bs-tertiary-bg: #1E2633;
+    --bs-border-color: #2E3747;
+    --bs-primary: #9DB8DB;
+    --bs-primary-rgb: 157, 184, 219;
+    --bs-primary-text-emphasis: #B8CDE8;
+    --bs-primary-bg-subtle: #1B2A3F;
+    --bs-primary-border-subtle: #2F4560;
+    --bs-danger: #E07A5F;
+    --bs-danger-rgb: 224, 122, 95;
+    --bs-danger-text-emphasis: #F0A08C;
+    --bs-danger-bg-subtle: #2E1B16;
+    --bs-danger-border-subtle: #6B3A2E;
+    --bs-link-color: #9DB8DB;
+    --bs-link-color-rgb: 157, 184, 219;
+    --bs-link-hover-color: #C9D9EE;
+    --bs-link-hover-color-rgb: 201, 217, 238;
+    --bs-focus-ring-color: rgba(157, 184, 219, .35);
+}
+
+/* ---------- 文字 ---------- */
+body {
+    font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', system-ui, sans-serif;
+    --jt-head-font: 'Shippori Mincho', 'Noto Serif JP', serif;
+}
+html[lang="vi"] body {
+    /* 日本語フォントはベトナム語の声調記号が足りないので切り替える */
+    font-family: 'Be Vietnam Pro', 'Zen Kaku Gothic New', system-ui, sans-serif;
+    --jt-head-font: 'Noto Serif', 'Shippori Mincho', serif;
+}
+h1, h2, .h1, .h2, .h3, .h4, .jt-head {
+    font-family: var(--jt-head-font);
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+.h5, h5 { font-weight: 700; }
+.text-muted { color: var(--bs-secondary-color) !important; }
+
+/* ---------- ヘッダー（藍） ---------- */
+.jt-header { background: var(--jt-header-bg); color: var(--jt-header-text); margin-bottom: 2rem; }
+.jt-header .container { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem 1.5rem; min-height: 64px; }
+.jt-brand { font-family: 'Shippori Mincho', serif; font-weight: 700; font-size: 1.375rem; letter-spacing: .04em;
+            color: var(--jt-header-text) !important; text-decoration: none; }
+.jt-brand span { color: var(--jt-shu); }
+.jt-nav { display: flex; flex-wrap: wrap; gap: 2px; flex: 1; margin: 0; padding: 0; list-style: none; }
+.jt-nav a { display: block; padding: .65rem .75rem; font-size: .875rem; color: var(--jt-header-muted);
+            text-decoration: none; border-bottom: 2px solid transparent; }
+.jt-nav a:hover { color: var(--jt-header-text); }
+.jt-nav a.active { color: var(--jt-header-text); border-bottom-color: var(--jt-shu); }
+.jt-tools { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; padding: .5rem 0; }
+.jt-seg { display: inline-flex; border: 1px solid var(--jt-header-ctrl); border-radius: 4px; overflow: hidden; }
+.jt-seg a { min-width: 40px; min-height: 36px; display: inline-flex; align-items: center; justify-content: center;
+            padding: 0 .55rem; font-size: .75rem; font-weight: 700; letter-spacing: .06em;
+            color: var(--jt-header-muted); text-decoration: none; }
+.jt-seg a.active { background: var(--jt-header-text); color: var(--jt-header-bg); }
+.jt-ghost { min-height: 36px; padding: 0 .75rem; border: 1px solid var(--jt-header-ctrl); border-radius: 4px;
+            background: transparent; color: var(--jt-header-text); font-size: .8125rem;
+            display: inline-flex; align-items: center; gap: .4rem; }
+.jt-ghost:hover { border-color: var(--jt-header-muted); }
+.jt-user { font-size: .8125rem; color: var(--jt-header-muted); }
+/* テーマ切替ボタン：今のテーマに合わせてアイコン・文言を出し分け */
+.jt-icon-text { display: inline-flex; align-items: center; gap: .4rem; }
+[data-bs-theme="dark"] .jt-only-light, [data-bs-theme="light"] .jt-only-dark { display: none !important; }
+
+/* ---------- ページ見出し ---------- */
+.jt-page-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem;
+                border-bottom: 1px solid var(--bs-border-color); padding-bottom: 1.25rem; margin-bottom: 1.75rem; }
+.jt-page-head h1 { margin: .25rem 0 0; font-size: 2rem; }
+.jt-eyebrow { margin: 0; font-size: .8125rem; color: var(--bs-secondary-color); letter-spacing: .08em; }
+
+/* ---------- ボタン ---------- */
+.btn { border-radius: 4px; }
+.btn-primary {
+    --bs-btn-bg: var(--jt-ai); --bs-btn-border-color: var(--jt-ai);
+    --bs-btn-hover-bg: var(--jt-ai-hover); --bs-btn-hover-border-color: var(--jt-ai-hover);
+    --bs-btn-active-bg: var(--jt-ai-hover); --bs-btn-active-border-color: var(--jt-ai-hover);
+    --bs-btn-disabled-bg: var(--jt-ai); --bs-btn-disabled-border-color: var(--jt-ai);
+    --bs-btn-color: #FFFFFF; --bs-btn-hover-color: #FFFFFF; --bs-btn-active-color: #FFFFFF;
+}
+[data-bs-theme="dark"] .btn-primary { --bs-btn-color: #0B1018; --bs-btn-hover-color: #0B1018; --bs-btn-active-color: #0B1018; }
+.btn-outline-primary {
+    --bs-btn-color: var(--jt-ai); --bs-btn-border-color: var(--jt-ai);
+    --bs-btn-hover-bg: var(--jt-ai); --bs-btn-hover-border-color: var(--jt-ai); --bs-btn-hover-color: var(--jt-surface);
+    --bs-btn-active-bg: var(--jt-ai); --bs-btn-active-border-color: var(--jt-ai); --bs-btn-active-color: var(--jt-surface);
+}
+.btn-outline-secondary {
+    --bs-btn-color: var(--bs-body-color); --bs-btn-border-color: var(--bs-border-color);
+    --bs-btn-hover-bg: var(--bs-tertiary-bg); --bs-btn-hover-border-color: var(--bs-border-color); --bs-btn-hover-color: var(--bs-body-color);
+}
+.btn-outline-danger {
+    --bs-btn-color: var(--jt-shu-text); --bs-btn-border-color: var(--jt-alert-border);
+    --bs-btn-hover-bg: var(--jt-shu); --bs-btn-hover-border-color: var(--jt-shu); --bs-btn-hover-color: #FFFFFF;
+}
+.btn-success {
+    --bs-btn-bg: #2E6B4F; --bs-btn-border-color: #2E6B4F; --bs-btn-hover-bg: #245A41; --bs-btn-hover-border-color: #245A41;
+}
+
+/* ---------- カード・表（白 / ダークでは墨色） ---------- */
+.card { --bs-card-bg: var(--jt-surface); --bs-card-border-color: var(--bs-border-color); --bs-card-cap-bg: var(--jt-surface);
+        --bs-card-border-radius: 4px; --bs-card-inner-border-radius: 3px; }
+.card-header { font-weight: 700; }
+.bg-white { background-color: var(--jt-surface) !important; }
+.bg-light { background-color: var(--bs-body-bg) !important; }
+.table { --bs-table-bg: var(--jt-surface); --bs-table-border-color: var(--jt-divider); --bs-table-color: var(--bs-body-color);
+         --bs-table-hover-bg: rgba(var(--bs-primary-rgb), .06); --bs-table-hover-color: var(--bs-body-color); }
+.table > thead th { font-size: .8125rem; font-weight: 500; color: var(--bs-secondary-color); background: var(--jt-surface); }
+.table-wrap { background: var(--jt-surface); border: 1px solid var(--bs-border-color); border-radius: 4px; overflow-x: auto; }
+.table-wrap > .table { margin: 0; }
+.table-danger { --bs-table-bg: var(--bs-danger-bg-subtle); --bs-table-color: var(--bs-body-color);
+                --bs-table-border-color: var(--jt-divider); --bs-table-hover-bg: var(--bs-danger-bg-subtle); --bs-table-hover-color: var(--bs-body-color); }
+.table-primary { --bs-table-bg: var(--bs-primary-bg-subtle); --bs-table-color: var(--bs-body-color);
+                 --bs-table-border-color: var(--jt-divider); --bs-table-hover-bg: var(--bs-primary-bg-subtle); --bs-table-hover-color: var(--bs-body-color); }
+.list-group { --bs-list-group-bg: var(--jt-surface); --bs-list-group-border-color: var(--jt-divider); --bs-list-group-color: var(--bs-body-color); }
+.form-control, .form-select { background-color: var(--jt-surface); }
+.alert { border-radius: 4px; }
+.alert-danger { --bs-alert-bg: var(--jt-surface); --bs-alert-border-color: var(--jt-alert-border); --bs-alert-color: var(--bs-body-color); }
+.alert-danger .alert-link { color: var(--jt-shu-text); }
+.badge.bg-danger { background-color: var(--jt-shu) !important; }
+
+/* ---------- ダッシュボード ---------- */
+.jt-tag { display: inline-block; padding: 2px 8px; margin-right: .6rem; background: var(--jt-shu); color: #FFFFFF;
+          font-size: .75rem; border-radius: 2px; }
+.jt-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+           background: var(--jt-surface); border: 1px solid var(--bs-border-color); border-radius: 4px; margin-bottom: 1.75rem; }
+.jt-kpi { display: block; padding: 1.35rem 1.5rem; border-right: 1px solid var(--jt-divider); color: inherit; text-decoration: none; }
+.jt-kpi:hover { background: rgba(var(--bs-primary-rgb), .04); }
+.jt-kpi-label { margin: 0; font-size: .8125rem; color: var(--bs-secondary-color); }
+.jt-kpi-value { margin: .35rem 0 0; font-family: var(--jt-head-font); font-size: 2.5rem; font-weight: 700; line-height: 1.1; }
+.jt-kpi-value small { font-family: inherit; font-size: .875rem; font-weight: 500; margin-left: .25rem; color: var(--bs-secondary-color); }
+.jt-danger-text { color: var(--jt-shu-text) !important; }
+.jt-ai-text { color: var(--jt-ai) !important; }
+.jt-section-title { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.25rem; margin: 0 0 .75rem; }
+.jt-section-title a { font-family: var(--bs-body-font-family); font-size: .8125rem; font-weight: 400; }
+.jt-box { background: var(--jt-surface); border: 1px solid var(--bs-border-color); border-radius: 4px; }
+.jt-interview { display: flex; gap: 1.25rem; align-items: center; padding: 1.25rem; }
+.jt-interview + .jt-interview { border-top: 1px solid var(--jt-divider); }
+.jt-date { border-right: 1px solid var(--jt-divider); padding-right: 1.25rem; text-align: center; min-width: 72px; }
+.jt-date-num { font-family: var(--jt-head-font); font-size: 2.25rem; font-weight: 700; line-height: 1.1; color: var(--jt-ai); }
+.jt-small { font-size: .75rem; color: var(--bs-secondary-color); margin: 0; }
+.jt-bars { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .6rem; }
+.jt-bar-row { display: flex; align-items: center; gap: .75rem; font-size: .8125rem; }
+.jt-bar-label { width: 104px; flex: none; }
+.jt-bar { flex: 1; height: 8px; background: var(--jt-bar-track); border-radius: 4px; overflow: hidden; }
+.jt-bar > span { display: block; height: 8px; background: var(--jt-bar-off); }
+.jt-bar > span.on { background: var(--jt-bar-on); }
+.jt-bar-count { width: 24px; text-align: right; font-weight: 700; }
+.jt-tasks { list-style: none; margin: 0; padding: 0; }
+.jt-tasks li { display: flex; gap: 1rem; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--jt-divider); }
+.jt-tasks li:last-child { border-bottom: 0; }
+.jt-due { font-family: var(--jt-head-font); font-size: 1.125rem; font-weight: 700; min-width: 56px; }
+.jt-chip { font-size: .75rem; padding: 2px 8px; border-radius: 2px; white-space: nowrap; border: 1px solid var(--jt-alert-border); color: var(--jt-shu-text); }
+.jt-chip.today { border-color: var(--bs-border-color); color: var(--bs-body-color); background: var(--bs-tertiary-bg); }
+.jt-empty { padding: 1.25rem; margin: 0; color: var(--bs-secondary-color); }
+
+/* ---------- ログイン ---------- */
+.jt-auth { max-width: 420px; margin: 0 auto; padding: 4rem 1rem; }
+.jt-auth .jt-brand { color: var(--bs-body-color) !important; font-size: 2rem; display: block; text-align: center; margin-bottom: 1.5rem; }
+.jt-auth-tools { display: flex; justify-content: flex-end; gap: .5rem; padding: 1rem; }
+.jt-auth-tools .jt-seg, .jt-auth-tools .jt-ghost { --jt-header-ctrl: var(--bs-border-color); --jt-header-muted: var(--bs-secondary-color);
+    --jt-header-text: var(--bs-body-color); --jt-header-bg: var(--bs-body-bg); }
+
+/* ---------- レスポンシブ ---------- */
+.jt-nav a { white-space: nowrap; padding-left: .6rem; padding-right: .6rem; }
+@media (max-width: 1399.98px) {
+    .jt-user { display: none; }   /* 幅が狭いときはメールアドレスを隠してメニューを1行に */
+}
+@media (max-width: 991.98px) {
+    .jt-header { margin-bottom: 1.25rem; }
+    .jt-header .container { gap: 0 .75rem; padding-top: .35rem; }
+    .jt-tools { margin-left: auto; padding: .35rem 0; }
+    /* メニューは2行目に。横スクロールで1行に収める */
+    .jt-header nav { order: 3; flex: 0 0 100% !important; }
+    .jt-nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -.25rem; }
+    .jt-nav::-webkit-scrollbar { display: none; }
+}
+@media (max-width: 575.98px) {
+    .jt-page-head h1 { font-size: 1.6rem; }
+    .jt-kpi { border-right: 0; border-bottom: 1px solid var(--jt-divider); }
+    .jt-brand { font-size: 1.2rem; }
+    .jt-seg a { min-width: 34px; padding: 0 .4rem; }
+    /* テーマボタンはアイコンだけ（文言は読み上げ用に残す） */
+    .jt-ghost .jt-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}

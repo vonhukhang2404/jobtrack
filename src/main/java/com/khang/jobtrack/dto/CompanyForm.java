@@ -5,14 +5,14 @@ import jakarta.validation.constraints.Size;
 
 public class CompanyForm {
 
-    @NotBlank(message = "企業名を入力してください")
-    @Size(max = 100, message = "100文字以内で入力してください")
+    @NotBlank(message = "{valid.companyName.required}")
+    @Size(max = 100, message = "{valid.max100}")
     private String name;
 
-    @Size(max = 50, message = "50文字以内で入力してください")
+    @Size(max = 50, message = "{valid.max50}")
     private String industry;
 
-    @Size(max = 255, message = "255文字以内で入力してください")
+    @Size(max = 255, message = "{valid.max255}")
     private String url;
 
     private String memo;

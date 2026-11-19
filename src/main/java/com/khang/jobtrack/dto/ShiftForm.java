@@ -9,16 +9,16 @@ import java.time.LocalDateTime;
 
 public class ShiftForm {
 
-    @NotBlank(message = "勤務先を入力してください")
-    @Size(max = 100, message = "100文字以内で入力してください")
+    @NotBlank(message = "{valid.workplace.required}")
+    @Size(max = 100, message = "{valid.max100}")
     private String workplace;
 
-    @NotNull(message = "開始日時を入力してください")
+    @NotNull(message = "{valid.startAt.required}")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime startAt;
 
     // 「終了が開始より後か」はControllerでチェックする
-    @NotNull(message = "終了日時を入力してください")
+    @NotNull(message = "{valid.endAt.required}")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime endAt;
 

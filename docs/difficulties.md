@@ -545,6 +545,28 @@ Dùng để ôn lại và trả lời câu hỏi phỏng vấn「開発で苦労
 
 ---
 
+### 53. Thiết kế lại giao diện（和モダン）+ sáng/tối + 3 ngôn ngữ（JA / EN / VI）
+
+- **Ngày:** 2026-11-19
+- **Cách làm:** Vẽ 3 mẫu Dashboard → chọn mẫu B（藍 × 朱）→ áp vào app bằng **biến CSS của Bootstrap 5.3**（`data-bs-theme="light|dark"`）, không đổi thư viện.
+- **Sáng/tối:** Lưu trong `localStorage`; lần đầu theo cài đặt của máy（`prefers-color-scheme`）. Script nhỏ trong `<head>` đặt theme **trước khi vẽ trang** → không bị nháy trắng.
+- **Đa ngôn ngữ:** `MessageSource` + `messages.properties`（ja, mặc định）/ `_en` / `_vi`, `LocaleChangeInterceptor`（`?lang=en`）, `CookieLocaleResolver`（nhớ 1 năm）. 240 key; viết script đối chiếu để 3 file không thiếu key.
+- **Những chỗ dễ sót:**
+  - Nhãn của enum（`status.label`）đang viết cứng tiếng Nhật → đổi sang `#messages.msg('status.' + s.name())`; `getLabel()` giữ lại cho prompt của AI.
+  - Thông báo validation: `message = "{valid.max100}"` → Spring Boot tự tra trong `messages*.properties` theo ngôn ngữ đang chọn.
+  - `rejectValue(field, code, "câu tiếng Nhật")` → chỉ truyền **code**（key）.
+  - Hộp `confirm('...')` viết trong HTML → chuyển sang `data-confirm` + JS chung.
+  - Ngày tháng: mẫu định dạng cũng là message（`fmt.date`）→ JA `2026/11/19`, EN `Nov 19, 2026`, VI `19/11/2026`.
+  - Số ít/số nhiều tiếng Anh: `{0,choice,1#1 day|1<{0} days}`.
+  - Font Nhật không đủ dấu tiếng Việt → khi `lang=vi` đổi sang Be Vietnam Pro / Noto Serif.
+  - Thymeleaf 3.1 không cho dùng `request` trong template → `@ControllerAdvice` truyền `currentPath` để tô sáng menu.
+- **Chưa làm:** Thông báo lỗi do AI / service sinh ra vẫn là tiếng Nhật（nằm trong service và test）.
+- **Bài học:** Đa ngôn ngữ nên làm từ đầu; viết cứng chữ trong template rồi sửa sau thì phải đụng vào mọi file.
+- **Câu trả lời phỏng vấn:**
+  「留学生の就活も想定して、画面を日本語・英語・ベトナム語で切り替えられるようにしました。Spring の MessageSource で文言を外部ファイルに分け、入力チェックのメッセージや日付の形式も言語ごとに変わります。ダークモードは Bootstrap の CSS 変数で実装しました。」
+
+---
+
 <!-- Thêm mục mới theo mẫu:
 ### N. Tiêu đề
 - **Ngày:**

@@ -1,79 +1,86 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>シフト一覧 | JobTrack</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title th:text="#{shift.list} + ' | JobTrack'">シフト一覧 | JobTrack</title>
+    <th:block th:replace="~{fragments/header :: assets}"></th:block>
 </head>
-<body class="bg-light">
-<nav th:replace="~{fragments/header :: navbar}"></nav>
-<div class="container">
-    <h1 class="h3 mb-3">アルバイトのシフト</h1>
-    <a th:href="@{/shifts/new}" class="btn btn-primary mb-3">＋ シフトを追加</a>
+<body>
+<header th:replace="~{fragments/header :: navbar}"></header>
+<main class="container pb-5">
+    <div class="jt-page-head">
+        <h1 th:text="#{shift.list}">アルバイトのシフト</h1>
+        <a th:href="@{/shifts/new}" class="btn btn-primary" th:text="#{shift.add}">＋ シフトを追加</a>
+    </div>
 
     <!-- 警告①：シフトと面接の重複 -->
-    <div class="alert alert-danger" th:if="${conflicts != null and !conflicts.isEmpty()}">
-        <div class="fw-bold mb-1">⚠ シフトと面接の時間が重なっています</div>
+    <div class="alert alert-danger" role="alert" th:if="${conflicts != null and !conflicts.isEmpty()}">
+        <div class="fw-bold mb-1"><span class="jt-tag" th:text="#{dash.notice}">注意</span><span th:text="#{shift.conflictTitle}">シフトと面接の時間が重なっています</span></div>
         <ul class="mb-0">
-            <li th:each="c : ${conflicts}">
-                <span th:text="${#temporals.format(c.shift().startAt, 'MM/dd HH:mm')} + '〜' + ${#temporals.format(c.shift().endAt, 'HH:mm')}">11/05 12:00〜14:00</span>
-                のシフト（<span th:text="${c.shift().workplace}">ローソン</span>）と
-                <span th:text="${c.interview().application.company.name}">企業名</span>
-                の第<span th:text="${c.interview().round}">1</span>次面接
-                （<span th:text="${#temporals.format(c.interview().scheduledAt, 'MM/dd HH:mm')}">11/05 13:00</span>）
+            <li th:each="c : ${conflicts}"
+                th:text="#{shift.conflictItem(
+                    ${#temporals.format(c.shift().startAt, #messages.msg('fmt.md')) + ' ' + #temporals.format(c.shift().startAt, 'HH:mm')},
+                    ${#temporals.format(c.shift().endAt, 'HH:mm')},
+                    ${c.shift().workplace},
+                    ${c.interview().application.company.name},
+                    ${c.interview().round},
+                    ${#temporals.format(c.interview().scheduledAt, #messages.msg('fmt.md')) + ' ' + #temporals.format(c.interview().scheduledAt, 'HH:mm')})}">
+                11/05 12:00〜14:00 のシフト（ローソン）と 企業名 の第1次面接（11/05 13:00）
             </li>
         </ul>
     </div>
 
     <!-- 警告②：週28時間 -->
     <div class="card mb-4" th:if="${weeklyHours != null and !weeklyHours.isEmpty()}">
-        <div class="card-header bg-white fw-bold">週ごとの勤務時間（上限 28時間）</div>
+        <div class="card-header" th:text="#{shift.weeklyTitle}">週ごとの勤務時間（上限 28時間）</div>
         <ul class="list-group list-group-flush">
             <li class="list-group-item d-flex justify-content-between align-items-center"
                 th:each="w : ${weeklyHours}"
                 th:classappend="${w.over()} ? 'list-group-item-danger' : ''">
                 <span>
-                    <span th:text="${#temporals.format(w.weekStart(), 'yyyy/MM/dd')} + ' の週（月〜日）'">2026/11/02 の週</span>
-                    <span class="badge bg-danger ms-1" th:if="${w.over()}">28時間超過</span>
+                    <span th:text="#{shift.weekOf(${#temporals.format(w.weekStart(), #messages.msg('fmt.date'))})}">2026/11/02 の週（月〜日）</span>
+                    <span class="badge bg-danger ms-1" th:if="${w.over()}" th:text="#{shift.over28}">28時間超過</span>
                 </span>
-                <span class="fw-bold" th:text="${#numbers.formatDecimal(w.hours(), 1, 1)} + ' 時間'">12.0 時間</span>
+                <span class="fw-bold" th:text="#{shift.hours(${#numbers.formatDecimal(w.hours(), 1, 1)})}">12.0 時間</span>
             </li>
         </ul>
     </div>
 
-    <p th:if="${shifts.isEmpty()}">まだシフトが登録されていません。</p>
+    <p class="text-muted" th:if="${shifts.isEmpty()}" th:text="#{shift.empty}">まだシフトが登録されていません。</p>
 
-    <table class="table table-hover bg-white align-middle" th:unless="${shifts.isEmpty()}">
-        <thead>
-        <tr>
-            <th>日付</th>
-            <th>時間</th>
-            <th>勤務先</th>
-            <th>メモ</th>
-            <th>操作</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="s : ${shifts}"
-            th:with="conflict=${conflictShiftIds != null and conflictShiftIds.contains(s.id)}"
-            th:classappend="${conflict} ? 'table-danger' : ''">
-            <td class="text-nowrap" th:text="${#temporals.format(s.startAt, 'yyyy/MM/dd (E)')}">2026/11/05 (木)</td>
-            <td class="text-nowrap">
-                <span th:text="${#temporals.format(s.startAt, 'HH:mm')} + '〜' + ${#temporals.format(s.endAt, 'HH:mm')}">12:00〜14:00</span>
-                <span class="badge bg-danger ms-1" th:if="${conflict}">面接と重複</span>
-            </td>
-            <td th:text="${s.workplace}">ローソン</td>
-            <td th:text="${s.memo}" style="white-space: pre-wrap;">メモ</td>
-            <td class="text-nowrap">
-                <a th:href="@{/shifts/{id}/edit(id=${s.id})}" class="btn btn-sm btn-outline-secondary">編集</a>
-                <form th:action="@{/shifts/{id}/delete(id=${s.id})}" method="post" class="d-inline"
-                      onsubmit="return confirm('このシフトを削除しますか？');">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">削除</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</div>
+    <div class="table-wrap" th:unless="${shifts.isEmpty()}">
+        <table class="table table-hover align-middle">
+            <thead>
+            <tr>
+                <th th:text="#{field.date}">日付</th>
+                <th th:text="#{field.time}">時間</th>
+                <th th:text="#{field.workplace}">勤務先</th>
+                <th th:text="#{field.memo}">メモ</th>
+                <th th:text="#{common.actions}">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${shifts}"
+                th:with="conflict=${conflictShiftIds != null and conflictShiftIds.contains(s.id)}"
+                th:classappend="${conflict} ? 'table-danger' : ''">
+                <td class="text-nowrap" th:text="${#temporals.format(s.startAt, #messages.msg('fmt.dateE'))}">2026/11/05 (木)</td>
+                <td class="text-nowrap">
+                    <span th:text="${#temporals.format(s.startAt, 'HH:mm')} + '〜' + ${#temporals.format(s.endAt, 'HH:mm')}">12:00〜14:00</span>
+                    <span class="badge bg-danger ms-1" th:if="${conflict}" th:text="#{shift.conflictBadge}">面接と重複</span>
+                </td>
+                <td th:text="${s.workplace}">ローソン</td>
+                <td th:text="${s.memo}" style="white-space: pre-wrap;">メモ</td>
+                <td class="text-nowrap">
+                    <a th:href="@{/shifts/{id}/edit(id=${s.id})}" class="btn btn-sm btn-outline-secondary" th:text="#{common.edit}">編集</a>
+                    <form th:action="@{/shifts/{id}/delete(id=${s.id})}" method="post" class="d-inline"
+                          th:attr="data-confirm=#{shift.confirmDelete}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" th:text="#{common.delete}">削除</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
 </body>
 </html>

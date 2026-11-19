@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 @Controller
 @RequestMapping("/interviews")
 public class InterviewController {
-    private static final String DUPLICATE_MESSAGE = "この応募の面接は既に登録されています";
 
     private final UserService userService;
     private final ApplicationService applicationService;
@@ -65,7 +64,7 @@ public class InterviewController {
 
         if (canCheckDuplicate(interviewForm, bindingResult)
                 && interviewService.isRoundTaken(user, interviewForm.getApplicationId(), interviewForm.getRound())) {
-            bindingResult.rejectValue("round", "duplicate", DUPLICATE_MESSAGE);
+            bindingResult.rejectValue("round", "valid.interview.duplicate");
         }
         if (bindingResult.hasErrors()) {
             addFormOptions(model, user);
@@ -105,7 +104,7 @@ public class InterviewController {
         if (canCheckDuplicate(interviewForm, bindingResult)
                 && interviewService.isRoundTakenByOther(user, interviewForm.getApplicationId(),
                 interviewForm.getRound(), id)) {
-            bindingResult.rejectValue("round", "duplicate", DUPLICATE_MESSAGE);
+            bindingResult.rejectValue("round", "valid.interview.duplicate");
         }
         if (bindingResult.hasErrors()) {
             model.addAttribute("interviewId", id);

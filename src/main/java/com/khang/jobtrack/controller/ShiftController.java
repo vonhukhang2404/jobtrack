@@ -115,7 +115,7 @@ public class ShiftController {
     private void checkOrder(ShiftForm form, BindingResult bindingResult) {
         if (form.getStartAt() != null && form.getEndAt() != null
                 && !form.getEndAt().isAfter(form.getStartAt())) {
-            bindingResult.rejectValue("endAt", "order", "終了は開始より後にしてください");
+            bindingResult.rejectValue("endAt", "valid.shift.order");
         }
     }
 }

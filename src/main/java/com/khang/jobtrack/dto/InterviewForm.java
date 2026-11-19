@@ -10,22 +10,22 @@ import java.time.LocalDateTime;
 
 public class InterviewForm {
 
-    @NotNull(message = "応募を選択してください")
+    @NotNull(message = "{valid.application.select}")
     private Long applicationId;
 
-    @NotNull(message = "何次面接かを入力してください")
-    @Min(value = 1, message = "1以上で入力してください")
+    @NotNull(message = "{valid.round.required}")
+    @Min(value = 1, message = "{valid.min1}")
     private Integer round;
 
     // <input type="datetime-local"> は「2026-11-05T14:00」の形式で送られる
-    @NotNull(message = "日時を入力してください")
+    @NotNull(message = "{valid.datetime.required}")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime scheduledAt;
 
-    @NotNull(message = "形式を選択してください")
+    @NotNull(message = "{valid.format.select}")
     private InterviewFormat format = InterviewFormat.ONLINE;
 
-    @NotNull(message = "結果を選択してください")
+    @NotNull(message = "{valid.result.select}")
     private InterviewResult result = InterviewResult.PENDING;
 
     private String notes;

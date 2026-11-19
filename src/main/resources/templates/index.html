@@ -1,134 +1,110 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>ダッシュボード | JobTrack</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title th:text="#{nav.dashboard} + ' | JobTrack'">ダッシュボード | JobTrack</title>
+    <th:block th:replace="~{fragments/header :: assets}"></th:block>
 </head>
-<body class="bg-light">
-<nav th:replace="~{fragments/header :: navbar}"></nav>
-<div class="container">
-    <h1 class="h3 mb-4">ダッシュボード</h1>
+<body>
+<header th:replace="~{fragments/header :: navbar}"></header>
+<main class="container pb-5">
 
-    <div class="alert alert-danger" th:if="${conflictCount != null and conflictCount > 0}">
-        ⚠ シフトと面接の時間が重なっている予定が <strong th:text="${conflictCount}">1</strong> 件あります。
-        <a th:href="@{/shifts}" class="alert-link">シフトを確認する</a>
+    <div class="jt-page-head">
+        <div>
+            <p class="jt-eyebrow" th:text="${#temporals.format(today, #messages.msg('fmt.long'))}">2026年11月19日（木）</p>
+            <h1 th:text="#{dash.title}">今日の就活</h1>
+        </div>
+        <a th:href="@{/companies/new}" class="btn btn-primary px-4 py-2" th:text="#{company.add}">＋ 企業を追加</a>
+    </div>
+
+    <!-- シフトと面接の重複 -->
+    <div class="alert alert-danger d-flex flex-wrap justify-content-between align-items-center gap-2" role="alert"
+         th:if="${conflictCount != null and conflictCount > 0}">
+        <span><span class="jt-tag" th:text="#{dash.notice}">注意</span><span th:text="#{dash.conflict(${conflictCount})}">シフトと面接の時間が重なっている予定が 1 件あります。</span></span>
+        <a th:href="@{/shifts}" class="alert-link fw-bold" th:text="#{dash.conflictLink}">シフトを確認する</a>
     </div>
 
     <!-- 1. 件数のサマリー -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <a th:href="@{/companies}" class="card text-decoration-none h-100">
-                <div class="card-body">
-                    <div class="text-muted small">登録企業</div>
-                    <div class="display-6" th:text="${companyCount}">0</div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-4">
-            <a th:href="@{/applications}" class="card text-decoration-none h-100">
-                <div class="card-body">
-                    <div class="text-muted small">応募数</div>
-                    <div class="display-6" th:text="${applicationCount}">0</div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-4">
-            <a th:href="@{/tasks}" class="card text-decoration-none h-100">
-                <div class="card-body">
-                    <div class="text-muted small">締切が近いタスク（7日以内・期限切れ含む）</div>
-                    <div class="display-6" th:classappend="${upcomingTasks.size() > 0} ? 'text-danger' : ''"
-                         th:text="${upcomingTasks.size()}">0</div>
-                </div>
-            </a>
-        </div>
-    </div>
-
-    <!-- 2b. これからの面接 -->
-    <div class="mb-4" th:if="${upcomingInterviews != null}">
-        <div class="card">
-            <div class="card-header bg-white fw-bold">これからの面接</div>
-            <div class="card-body p-0">
-                <p class="text-muted p-3 mb-0" th:if="${upcomingInterviews.isEmpty()}">予定されている面接はありません。</p>
-                <table class="table table-sm mb-0 align-middle" th:unless="${upcomingInterviews.isEmpty()}">
-                    <thead>
-                    <tr>
-                        <th class="ps-3">日時</th>
-                        <th>企業名</th>
-                        <th>回</th>
-                        <th>形式</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="i : ${upcomingInterviews}">
-                        <td class="ps-3 text-nowrap" th:text="${#temporals.format(i.scheduledAt, 'MM/dd (E) HH:mm')}">11/05 (木) 13:00</td>
-                        <td th:text="${i.application.company.name}">企業名</td>
-                        <td th:text="'第' + ${i.round} + '次'">第1次</td>
-                        <td th:text="${i.format.label}">オンライン</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="card-footer bg-white text-end">
-                <a th:href="@{/interviews}" class="small">すべての面接 →</a>
-            </div>
-        </div>
-    </div>
+    <section class="jt-kpis" th:attr="aria-label=#{dash.summary}">
+        <a th:href="@{/companies}" class="jt-kpi">
+            <p class="jt-kpi-label" th:text="#{dash.kpi.companies}">登録企業</p>
+            <p class="jt-kpi-value"><span th:text="${companyCount}">0</span><small th:text="#{unit.company}">社</small></p>
+        </a>
+        <a th:href="@{/applications}" class="jt-kpi">
+            <p class="jt-kpi-label" th:text="#{dash.kpi.applications}">応募数</p>
+            <p class="jt-kpi-value"><span th:text="${applicationCount}">0</span><small th:text="#{unit.item}">件</small></p>
+        </a>
+        <a th:href="@{/tasks}" class="jt-kpi">
+            <p class="jt-kpi-label" th:text="#{dash.kpi.tasks}">締切が近いタスク</p>
+            <p class="jt-kpi-value" th:classappend="${upcomingTasks.size() > 0} ? 'jt-danger-text'"><span th:text="${upcomingTasks.size()}">0</span><small th:text="#{unit.item}">件</small></p>
+        </a>
+        <a th:href="@{/interviews}" class="jt-kpi">
+            <p class="jt-kpi-label" th:text="#{dash.kpi.interviews}">これからの面接</p>
+            <p class="jt-kpi-value jt-ai-text"><span th:text="${upcomingInterviews.size()}">0</span><small th:text="#{unit.item}">件</small></p>
+        </a>
+    </section>
 
     <div class="row g-4">
-        <!-- 2. 締切が近いタスク -->
-        <div class="col-lg-7">
-            <div class="card h-100">
-                <div class="card-header bg-white fw-bold">締切が近いタスク</div>
-                <div class="card-body p-0">
-                    <p class="text-muted p-3 mb-0" th:if="${upcomingTasks.isEmpty()}">7日以内に締切のタスクはありません。</p>
-                    <table class="table table-sm mb-0 align-middle" th:unless="${upcomingTasks.isEmpty()}">
-                        <thead>
-                        <tr>
-                            <th class="ps-3">締切</th>
-                            <th>タスク</th>
-                            <th>企業名</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="t : ${upcomingTasks}"
-                            th:with="overdue=${t.dueDate.isBefore(today)}"
-                            th:classappend="${overdue} ? 'table-danger' : ''">
-                            <td class="ps-3 text-nowrap">
-                                <span th:text="${#temporals.format(t.dueDate, 'MM/dd')}">10/31</span>
-                                <span class="badge bg-danger ms-1" th:if="${overdue}">期限切れ</span>
-                                <span class="badge bg-warning text-dark ms-1"
-                                      th:if="${t.dueDate.isEqual(today)}">今日</span>
-                            </td>
-                            <td th:text="${t.title}">ES提出</td>
-                            <td th:text="${t.application.company.name}">企業名</td>
-                        </tr>
-                        </tbody>
-                    </table>
+        <div class="col-lg-6">
+            <!-- 2. これからの面接 -->
+            <h2 class="jt-section-title">
+                <span th:text="#{dash.upcoming}">これからの面接</span>
+                <a th:href="@{/interviews}" th:text="#{common.viewAll}">一覧へ</a>
+            </h2>
+            <div class="jt-box mb-4">
+                <p class="jt-empty" th:if="${upcomingInterviews.isEmpty()}" th:text="#{dash.noInterviews}">予定されている面接はありません。</p>
+                <div class="jt-interview" th:each="i, st : ${upcomingInterviews}" th:if="${st.index < 3}">
+                    <div class="jt-date">
+                        <p class="jt-small" th:text="${#temporals.format(i.scheduledAt, #messages.msg('fmt.month'))}">12月</p>
+                        <p class="jt-date-num m-0" th:text="${i.scheduledAt.dayOfMonth}">3</p>
+                        <p class="jt-small" th:text="${#temporals.format(i.scheduledAt, 'EEEE')}">木曜日</p>
+                    </div>
+                    <div class="flex-grow-1" style="min-width: 0">
+                        <p class="m-0 fw-bold" th:text="${i.application.company.name}">企業名</p>
+                        <p class="m-0 mt-1 small text-muted"
+                           th:text="#{dash.ivDetail(${#temporals.format(i.scheduledAt, 'HH:mm')}, ${i.round}, ${#messages.msg('format.' + i.format.name())})}">15:00〜 ／ 第1次面接 ／ オンライン</p>
+                        <p class="m-0 mt-2 small jt-danger-text" th:if="${st.first and nextInterviewDays != null}"
+                           th:text="${nextInterviewDays == 0} ? #{badge.today} : #{dash.daysLeft(${nextInterviewDays})}">あと 14 日</p>
+                    </div>
                 </div>
-                <div class="card-footer bg-white text-end">
-                    <a th:href="@{/tasks}" class="small">すべてのタスク →</a>
+            </div>
+
+            <!-- 3. 選考の進み具合 -->
+            <h2 class="jt-section-title"><span th:text="#{dash.progress}">選考の進み具合</span></h2>
+            <div class="jt-box jt-bars">
+                <div class="jt-bar-row" th:each="e : ${statusCounts}">
+                    <span class="jt-bar-label" th:text="${#messages.msg('status.' + e.key.name())}">未応募</span>
+                    <span class="jt-bar"><span th:classappend="${e.key.name() matches 'DOCUMENT|FIRST_INTERVIEW|SECOND_INTERVIEW|FINAL_INTERVIEW|OFFER'} ? 'on'"
+                                               th:style="'width:' + ${e.value * 100 / statusMax} + '%'"></span></span>
+                    <span class="jt-bar-count" th:text="${e.value}">0</span>
                 </div>
             </div>
         </div>
 
-        <!-- 3. 選考ステータス別の件数 -->
-        <div class="col-lg-5">
-            <div class="card h-100">
-                <div class="card-header bg-white fw-bold">選考ステータス別</div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between align-items-center"
-                        th:each="e : ${statusCounts}"
-                        th:classappend="${e.value == 0} ? 'text-muted' : ''">
-                        <span th:text="${e.key.label}">未応募</span>
-                        <span class="badge rounded-pill"
-                              th:classappend="${e.value == 0} ? 'bg-light text-muted' : 'bg-primary'"
-                              th:text="${e.value}">0</span>
+        <div class="col-lg-6">
+            <!-- 4. 締切が近いタスク -->
+            <h2 class="jt-section-title">
+                <span th:text="#{dash.kpi.tasks}">締切が近いタスク</span>
+                <a th:href="@{/tasks}" th:text="#{common.viewAll}">一覧へ</a>
+            </h2>
+            <p class="small text-muted mb-2" th:text="#{dash.tasksHint}">7日以内・期限切れを含みます</p>
+            <div class="jt-box">
+                <p class="jt-empty" th:if="${upcomingTasks.isEmpty()}" th:text="#{dash.noTasks}">7日以内に締切のタスクはありません。</p>
+                <ul class="jt-tasks" th:unless="${upcomingTasks.isEmpty()}">
+                    <li th:each="t : ${upcomingTasks}" th:with="overdue=${t.dueDate.isBefore(today)}">
+                        <span class="jt-due" th:classappend="${overdue} ? 'jt-danger-text'"
+                              th:text="${#temporals.format(t.dueDate, #messages.msg('fmt.md'))}">10/31</span>
+                        <span class="flex-grow-1" style="min-width: 0">
+                            <span class="d-block fw-medium" th:text="${t.title}">ES提出</span>
+                            <span class="d-block small text-muted" th:text="${t.application.company.name}">企業名</span>
+                        </span>
+                        <span class="jt-chip" th:if="${overdue}" th:text="#{badge.overdue}">期限切れ</span>
+                        <span class="jt-chip today" th:if="${t.dueDate.isEqual(today)}" th:text="#{badge.today}">今日</span>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
-</div>
+</main>
 </body>
 </html>

@@ -6,15 +6,15 @@ import jakarta.validation.constraints.Size;
 
 public class RegisterForm {
 
-    @NotBlank(message = "名前を入力してください")
-    @Size(max = 50, message = "名前は50文字以内で入力してください")
+    @NotBlank(message = "{valid.name.required}")
+    @Size(max = 50, message = "{valid.name.max50}")
     private String name;
 
-    @NotBlank(message = "メールアドレスを入力してください")
-    @Email(message = "メールアドレスの形式が正しくありません")
+    @NotBlank(message = "{valid.email.required}")
+    @Email(message = "{valid.email.format}")
     private String email;
 
-    @Size(min = 8, max = 72, message = "パスワードは8文字以上72文字以内で入力してください")
+    @Size(min = 8, max = 72, message = "{valid.password.size}")
     private String password;
 
     public String getName() {

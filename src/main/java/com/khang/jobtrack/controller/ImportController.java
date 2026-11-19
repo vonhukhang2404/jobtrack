@@ -8,6 +8,8 @@ import com.khang.jobtrack.importer.DocxTextExtractor;
 import com.khang.jobtrack.service.CompanyImportService;
 import com.khang.jobtrack.service.UserService;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -37,13 +39,21 @@ public class ImportController {
     private final UserService userService;
     private final CompanyImportService companyImportService;
     private final DocxTextExtractor docxTextExtractor;
+    private final MessageSource messageSource;
 
     public ImportController(UserService userService, CompanyImportService companyImportService,
-                            DocxTextExtractor docxTextExtractor) {
+                            DocxTextExtractor docxTextExtractor, MessageSource messageSource) {
         this.userService = userService;
         this.companyImportService = companyImportService;
         this.docxTextExtractor = docxTextExtractor;
+        this.messageSource = messageSource;
     }
+
+    // 画面の言語（Cookie / ?lang=）に合わせた文言を messages*.properties から取得
+    private String msg(String code, Object... args) {
+        return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
+    }
+
 
     @InitBinder("companyImportForm")
     public void initBinder(WebDataBinder binder) {
@@ -94,24 +104,24 @@ public class ImportController {
             }
             anySelected = true;
             if (item.getName() == null) {
-                bindingResult.rejectValue("items[" + i + "].name", "required", "企業名を入力してください");
+                bindingResult.rejectValue("items[" + i + "].name", "valid.companyName.required");
             } else if (item.getName().length() > 100) {
-                bindingResult.rejectValue("items[" + i + "].name", "size", "100文字以内で入力してください");
+                bindingResult.rejectValue("items[" + i + "].name", "valid.max100");
             }
             if (item.getIndustry() != null && item.getIndustry().length() > 50) {
-                bindingResult.rejectValue("items[" + i + "].industry", "size", "50文字以内で入力してください");
+                bindingResult.rejectValue("items[" + i + "].industry", "valid.max50");
             }
             if (item.getPosition() == null) {
-                bindingResult.rejectValue("items[" + i + "].position", "required", "職種を入力してください");
+                bindingResult.rejectValue("items[" + i + "].position", "valid.position.required");
             } else if (item.getPosition().length() > 100) {
-                bindingResult.rejectValue("items[" + i + "].position", "size", "100文字以内で入力してください");
+                bindingResult.rejectValue("items[" + i + "].position", "valid.max100");
             }
             if (item.getTaskTitle() != null && item.getTaskTitle().length() > 100) {
-                bindingResult.rejectValue("items[" + i + "].taskTitle", "size", "100文字以内で入力してください");
+                bindingResult.rejectValue("items[" + i + "].taskTitle", "valid.max100");
             }
         }
         if (!anySelected) {
-            model.addAttribute("importError", "登録する企業にチェックしてください。");
+            model.addAttribute("importError", msg("import.error.noneSelected"));
         }
         if (bindingResult.hasErrors() || !anySelected) {
             model.addAttribute("maxLength", CompanyImportService.MAX_TEXT_LENGTH);
@@ -119,10 +129,9 @@ public class ImportController {
         }
 
         CompanyImportService.ImportResult result = companyImportService.save(user, companyImportForm);
-        redirectAttributes.addFlashAttribute("message",
-                "資料から取り込みました：企業 " + result.companiesCreated() + " 社（既存 " + result.companiesReused()
-                        + " 社）、応募 " + result.applicationsCreated() + " 件（既存 " + result.applicationsReused()
-                        + " 件）、説明会タスク " + result.tasksCreated() + " 件");
+        redirectAttributes.addFlashAttribute("message", msg("import.done",
+                result.companiesCreated(), result.companiesReused(),
+                result.applicationsCreated(), result.applicationsReused(), result.tasksCreated()));
         return "redirect:/applications";
     }
 
@@ -138,12 +147,12 @@ public class ImportController {
                     return new String(file.getBytes(), StandardCharsets.UTF_8);
                 }
             } catch (IOException e) {
-                throw new DocumentReadException("ファイルを読み込めませんでした。", e);
+                throw new DocumentReadException(msg("import.error.read"), e);
             }
-            throw new DocumentReadException("対応しているファイルは .docx と .txt です。");
+            throw new DocumentReadException(msg("import.error.type"));
         }
         if (text == null || text.isBlank()) {
-            throw new DocumentReadException("ファイルを選ぶか、文章を貼り付けてください。");
+            throw new DocumentReadException(msg("import.error.empty"));
         }
         return text;
     }

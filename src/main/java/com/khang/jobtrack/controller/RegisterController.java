@@ -32,7 +32,7 @@ public class RegisterController {
                            BindingResult result) {
 
         if (userService.isEmailTaken(registerForm.getEmail())) {
-            result.rejectValue("email", "duplicate", "このメールアドレスは既に登録されています");
+            result.rejectValue("email", "valid.email.duplicate");
         }
 
         if (result.hasErrors()) {

@@ -51,7 +51,7 @@ public class CompanyController {
         User user = userService.findByEmail(userDetails.getUsername());
 
         if (companyService.isNameTaken(user, companyForm.getName())) {
-            bindingResult.rejectValue("name", "duplicate", "この企業は既に登録されています");
+            bindingResult.rejectValue("name", "valid.company.duplicate");
         }
 
         if (bindingResult.hasErrors()) {
@@ -89,7 +89,7 @@ public class CompanyController {
         User user = userService.findByEmail(userDetails.getUsername());
 
         if (companyService.isNameTakenByOther(user, companyForm.getName(), id)) {
-            bindingResult.rejectValue("name", "duplicate", "この企業は既に登録されています");
+            bindingResult.rejectValue("name", "valid.company.duplicate");
         }
 
         if (bindingResult.hasErrors()) {

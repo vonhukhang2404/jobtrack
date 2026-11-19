@@ -8,6 +8,8 @@ import com.khang.jobtrack.service.AiTaskService;
 import com.khang.jobtrack.service.ApplicationService;
 import com.khang.jobtrack.service.UserService;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -34,12 +36,14 @@ public class AiTaskController {
     private final UserService userService;
     private final ApplicationService applicationService;
     private final AiTaskService aiTaskService;
+    private final MessageSource messageSource;
 
     public AiTaskController(UserService userService, ApplicationService applicationService,
-                            AiTaskService aiTaskService) {
+                            AiTaskService aiTaskService, MessageSource messageSource) {
         this.userService = userService;
         this.applicationService = applicationService;
         this.aiTaskService = aiTaskService;
+        this.messageSource = messageSource;
     }
 
     @InitBinder
@@ -86,12 +90,12 @@ public class AiTaskController {
                 continue;
             }
             if (item.getTitle() == null) {
-                bindingResult.rejectValue("items[" + i + "].title", "required", "タスクを入力してください");
+                bindingResult.rejectValue("items[" + i + "].title", "valid.task.required");
             } else if (item.getTitle().length() > 100) {
-                bindingResult.rejectValue("items[" + i + "].title", "size", "100文字以内で入力してください");
+                bindingResult.rejectValue("items[" + i + "].title", "valid.max100");
             }
             if (item.getDueDate() == null) {
-                bindingResult.rejectValue("items[" + i + "].dueDate", "required", "締切を入力してください");
+                bindingResult.rejectValue("items[" + i + "].dueDate", "valid.dueDate.required");
             }
         }
         if (bindingResult.hasErrors()) {
@@ -100,7 +104,8 @@ public class AiTaskController {
         }
 
         int count = aiTaskService.saveSelected(user, id, aiTaskForm);
-        redirectAttributes.addFlashAttribute("message", "AIの提案から " + count + " 件のタスクを登録しました。");
+        redirectAttributes.addFlashAttribute("message",
+                messageSource.getMessage("aiTasks.saved", new Object[]{count}, LocaleContextHolder.getLocale()));
         return "redirect:/tasks";
     }
 }

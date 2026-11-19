@@ -19,7 +19,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/css/**").permitAll()  // không cần đăng nhập
+                        .requestMatchers("/login", "/register", "/css/**", "/js/**").permitAll()  // không cần đăng nhập
                         .anyRequest().authenticated()                                   // còn lại: phải đăng nhập
                 )
                 .formLogin(form -> form

@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Map;
+import com.khang.jobtrack.entity.ApplicationStatus;
+import com.khang.jobtrack.entity.Interview;
 
 @Controller
 public class HomeController {
@@ -37,11 +42,20 @@ public class HomeController {
         model.addAttribute("companyCount", dashboardService.countCompanies(user));
         model.addAttribute("applicationCount", dashboardService.countApplications(user));
         model.addAttribute("upcomingTasks", dashboardService.findUpcomingTasks(user, today));
-        model.addAttribute("statusCounts", dashboardService.countByStatus(user));
+        Map<ApplicationStatus, Long> statusCounts = dashboardService.countByStatus(user);
+        model.addAttribute("statusCounts", statusCounts);
+        // 棒グラフの長さの基準（最大の件数、0件のときは1）
+        model.addAttribute("statusMax", Math.max(1L, statusCounts.values().stream().mapToLong(Long::longValue).max().orElse(0L)));
         model.addAttribute("today", today);
 
         // 週4：今後の面接・シフト重複の件数
-        model.addAttribute("upcomingInterviews", interviewService.findUpcoming(user, LocalDateTime.now()));
+        List<Interview> upcomingInterviews = interviewService.findUpcoming(user, LocalDateTime.now());
+        model.addAttribute("upcomingInterviews", upcomingInterviews);
+        // 次の面接まであと何日か
+        if (!upcomingInterviews.isEmpty()) {
+            model.addAttribute("nextInterviewDays",
+                    ChronoUnit.DAYS.between(today, upcomingInterviews.get(0).getScheduledAt().toLocalDate()));
+        }
         model.addAttribute("conflictCount", shiftService.findConflicts(user).size());
 
         return "index";

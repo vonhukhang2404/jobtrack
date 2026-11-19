@@ -9,14 +9,14 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDate;
 
 public class ApplicationForm {
-    @NotNull(message = "企業を選択してください")
+    @NotNull(message = "{valid.company.select}")
     private Long companyId;
 
-    @NotBlank(message = "職種を入力してください")
-    @Size(max = 100, message = "100文字以内で入力してください")
+    @NotBlank(message = "{valid.position.required}")
+    @Size(max = 100, message = "{valid.max100}")
     private String position;
 
-    @NotNull(message = "ステータスを選択してください")
+    @NotNull(message = "{valid.status.select}")
     private ApplicationStatus status = ApplicationStatus.NOT_APPLIED;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
